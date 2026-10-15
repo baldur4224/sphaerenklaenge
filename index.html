@@ -6,6 +6,8 @@
 <title>SphärenKlänge · Baldur's Kreativa</title>
 <meta name="description" content="SphärenKlänge: die Musik von Baldur's Kreativa. Alben und Singles zum Reinhören und Herunterladen.">
 <meta name="theme-color" content="#0b0907">
+<meta name="application-name" content="SphärenKlänge">
+<meta name="apple-mobile-web-app-title" content="SphärenKlänge">
 <meta name="robots" content="noindex">
 <meta property="og:type" content="website">
 <meta property="og:title" content="SphärenKlänge">
@@ -319,6 +321,21 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .intro-go { margin-top: 18px; min-width: 240px; min-height: 52px; font-size: 1.05rem; }
 .hello { font-family: var(--display); font-size: 1.45rem; color: var(--gold-hi); margin: 6px 0 0; }
 #open-welcome { font-size: .86rem; color: var(--gold); text-decoration-color: rgba(217,169,69,.5); }
+/* Home-screen tip */
+.tipp { margin-top: 28px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.tipp summary { list-style: none; cursor: pointer; min-height: 60px; display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+.tipp summary::-webkit-details-marker { display: none; }
+.tipp-icon { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid rgba(217,169,69,.6); color: var(--gold); display: grid; place-items: center; flex: none; }
+.tipp-icon svg { width: 18px; height: 18px; }
+.tipp-head { flex: 1; min-width: 0; font-weight: 500; }
+.tipp-head b { color: var(--gold); font-weight: 700; }
+.tipp .chev { width: 18px; height: 18px; color: var(--gold); flex: none; transition: transform .2s; }
+.tipp[open] .chev { transform: rotate(180deg); }
+.tipp-body { padding: 4px 16px 18px; display: grid; gap: 14px; }
+.tipp-body > p { margin: 0; color: var(--muted); }
+.tipp-steps img { display: block; width: 100%; height: auto; margin-top: 10px; border-radius: 10px; border: 1px solid var(--line); }
+.tipp-note { font-size: .9rem; }
+.tipp-note b { color: var(--fg); }
 /* Leave confirmation */
 .exit { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px max(20px, env(safe-area-inset-left, 0px)); background: rgba(6,5,3,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .exit-card { width: 100%; max-width: 360px; background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line); border-radius: 18px; padding: 24px 22px; display: grid; gap: 14px; text-align: center; box-shadow: 0 30px 60px -20px rgba(0,0,0,.9); }
@@ -364,6 +381,25 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 
     <div class="sec-head" id="sec-singles"><h2>Singles</h2><span>Tippe zum Reinhören</span></div>
     <ol class="list" id="singles"></ol>
+
+    <details class="tipp">
+      <summary>
+        <span class="tipp-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
+        <span class="tipp-head"><b>Tipp:</b> SphärenKlänge als Symbol auf deinen Startbildschirm legen</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="tipp-body">
+        <p>So hast du die Musik immer mit einem Tipp griffbereit, fast wie eine App. Das geht mit dem Browser <b>Chrome</b> auf Android-Handys:</p>
+        <ol class="g-steps tipp-steps">
+          <li><span>Tippe oben rechts auf die <b>drei Punkte</b>.<img src="img/tipp/schritt1.jpg" alt="Chrome-Leiste, die drei Punkte oben rechts sind markiert" loading="lazy"></span></li>
+          <li><span>Wähle im Menü <b>„Installieren und Verknüpfung erstellen“</b>.<img src="img/tipp/schritt2.jpg" alt="Menüeintrag „Installieren und Verknüpfung erstellen“ ist markiert" loading="lazy"></span></li>
+          <li><span>Tippe auf <b>„Verknüpfung erstellen“</b> und danach auf <b>„Hinzufügen“</b>.<img src="img/tipp/schritt3.jpg" alt="Auswahlfenster, „Verknüpfung erstellen“ ist markiert" loading="lazy"></span></li>
+          <li><span>Fertig. Das goldene Dreizack-Symbol liegt jetzt auf deinem Startbildschirm.</span></li>
+        </ol>
+        <p class="tipp-note"><b>Seite aus WhatsApp geöffnet?</b> Dann zuerst oben rechts über die drei Punkte <b>„In Chrome öffnen“</b> wählen.</p>
+        <p class="tipp-note"><b>iPhone:</b> In Safari unten auf das Teilen-Symbol tippen und <b>„Zum Home-Bildschirm“</b> wählen.</p>
+      </div>
+    </details>
 
     <section class="take" aria-labelledby="take-title">
       <h2 id="take-title">Alles auf einmal</h2>
