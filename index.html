@@ -236,7 +236,19 @@ input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; backgroun
 input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--gold); }
 input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--gold-hi); margin-top: -6px; border: 0; }
 input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--gold-hi); border: 0; }
-.controls { display: flex; align-items: center; justify-content: center; gap: 28px; }
+.controls { display: flex; align-items: center; justify-content: center; gap: 16px; }
+.controls .round.small { width: 44px; height: 44px; color: var(--muted); }
+.controls .round.small svg { width: 20px; height: 20px; }
+.controls .round.small.on { color: var(--gold); background: rgba(217,169,69,.14); }
+.shuffle-wrap { display: flex; justify-content: center; margin-top: 30px; }
+.shuffle-btn { min-width: 260px; }
+.shared { padding-top: 10px; padding-bottom: 10px; background: linear-gradient(90deg, rgba(217,169,69,.22), rgba(217,169,69,.06)); border-bottom: 1px solid var(--line); }
+.shared-text { flex: 1; min-width: 0; display: grid; }
+.shared-text b { font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+.shared-text span { font-family: var(--display); font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.shared .pill { min-height: 42px; padding: 0 16px; }
+.intro-shared { display: grid; gap: 12px; justify-items: center; margin: 8px 0 6px; padding: 14px 16px 16px; border: 1px solid rgba(217,169,69,.45); border-radius: 14px; background: rgba(217,169,69,.08); color: var(--fg); max-width: 32em; }
+.intro-shared b { font-family: var(--display); font-weight: 400; color: var(--gold-hi); font-size: 1.1rem; }
 .controls .round { width: 56px; height: 56px; color: var(--fg); }
 .controls .round svg { width: 28px; height: 28px; }
 .controls .round.play { width: 76px; height: 76px; background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #b7842f); color: var(--on-gold); box-shadow: 0 10px 30px -10px rgba(217,169,69,.7); }
@@ -331,6 +343,8 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <button class="linkish" id="open-welcome">Begrüßung von Baldur lesen</button>
     </header>
 
+    <div class="shuffle-wrap"><button class="pill primary shuffle-btn" id="shuffle-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg><span class="lbl">Zufallswiedergabe</span><span class="sub" id="shuffle-n"></span></button></div>
+
     <div class="sec-head" id="sec-albums"><h2>Alben</h2><span>Tippe ein Cover an</span></div>
     <div class="grid" id="grid"></div>
 
@@ -375,6 +389,13 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 
 <!-- Dock -->
 <div class="dock idle" id="dock">
+  <div class="dock-row shared" id="shared" hidden>
+    <div class="dock-in">
+      <span class="shared-text"><b>Für dich geteilt</b><span id="shared-title"></span></span>
+      <button class="pill primary" id="shared-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Anhören</button>
+      <button class="round" id="shared-x" aria-label="Hinweis schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </div>
   <div class="dock-row mini" id="mini" hidden>
     <div class="mini-bar" id="mini-bar"></div>
     <div class="dock-in">
@@ -416,9 +437,11 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <div class="times"><span id="t-cur">0:00</span><span id="t-dur">0:00</span></div>
     </div>
     <div class="controls">
+      <button class="round small" id="s-shuffle" aria-pressed="false" aria-label="Zufallswiedergabe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></button>
       <button class="round" id="s-prev" aria-label="Vorheriges Lied"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
       <button class="round play" id="s-play" aria-label="Abspielen"></button>
       <button class="round" id="s-next" aria-label="Nächstes Lied"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+      <button class="round small" id="s-share" aria-label="Dieses Lied teilen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button>
     </div>
     <button class="pill sheet-pick" id="s-pick"></button>
     <button class="linkish" id="s-one" style="justify-self:center">Nur dieses Lied herunterladen (MP3)</button>
@@ -461,6 +484,10 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
     <div class="presents">Willkommen bei</div>
     <h1 class="gold" id="intro-title">SphärenKlänge</h1>
     <svg class="ornament" viewBox="0 0 280 14" fill="none" aria-hidden="true"><path d="M0 7h118M162 7h118" stroke="currentColor" stroke-width="1"/><path d="M140 1l6 6-6 6-6-6z" fill="currentColor"/><circle cx="124" cy="7" r="1.6" fill="currentColor"/><circle cx="156" cy="7" r="1.6" fill="currentColor"/></svg>
+    <div class="intro-shared" id="intro-shared" hidden>
+      <span id="intro-shared-text"></span>
+      <button class="pill primary" id="intro-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Lied anhören</button>
+    </div>
         <div class="welcome">
           <p>Hier erwartet dich eine vielfältige Sammlung unterschiedlicher Musik von Baldur, mit verschiedenen Klängen, Stimmungen und Melodien, die dich auf ganz unterschiedliche Weise begleiten können.</p>
           <p>Nimm dir einen Moment Zeit, höre dich in Ruhe durch die Sammlung und entdecke die Musik ganz in deinem eigenen Tempo.</p>
@@ -666,6 +693,7 @@ function rerender() { if (openAlbum) renderAlbum(); else renderHome(); }
 function onScroll() { $("#topbar").classList.toggle("scrolled", window.scrollY > 300); }
 window.addEventListener("scroll", onScroll, { passive: true });
 $("#a-play").addEventListener("click", () => {
+  stopShuffle();
   if (state.loaded && queue[state.i].album.id === openAlbum.id) toggle();
   else play(queue.findIndex(t => t.album.id === openAlbum.id));
 });
@@ -714,8 +742,19 @@ let guarded = false;
 /* Browsers only keep a step for "back" that was added during a real tap or key press. */
 function guard(e) {
   if (e && e.target && e.target.closest && e.target.closest("#exit")) return;
-  if (guarded || curHash() !== "") return;
-  guarded = true; go("sk");
+  if (guarded) return;
+  const h = curHash(), r = parseHash(h);
+  if (h === "") { guarded = true; go("sk"); return; }
+  /* Opened straight into an album (a shared link): put the overview and its guard step underneath. */
+  if (r.album && !r.overlay && navStack.length === 1) {
+    try {
+      history.replaceState(null, "", "#");
+      history.pushState(null, "", "#sk");
+      history.pushState(null, "", "#" + h);
+      navStack.splice(0, navStack.length, "", "sk", h);
+      guarded = true;
+    } catch (err) {}
+  }
 }
 /* On phones a touch only counts as a real tap once the finger lifts (a scroll never counts),
    so the step is added on "click", not on "pointerdown"; Chrome skips steps added without a real tap. */
@@ -783,20 +822,36 @@ document.querySelectorAll(".sheet").forEach(sh => {
 /* ---------- Dock sizing ---------- */
 function updateDock() {
   const dock = $("#dock");
-  dock.classList.toggle("idle", $("#selbar").hidden && $("#mini").hidden);
+  dock.classList.toggle("idle", $("#selbar").hidden && $("#mini").hidden && $("#shared").hidden);
   requestAnimationFrame(() => document.documentElement.style.setProperty("--dock-h", (dock.classList.contains("idle") ? 0 : dock.offsetHeight) + "px"));
 }
 try { new ResizeObserver(updateDock).observe($("#dock")); } catch (e) {}
 
 /* ---------- Player ---------- */
 const audio = $("#audio");
+/* Shuffle: a mixed order of all songs; next/previous/ended follow it until a song is picked by hand. */
+let shuffleOrder = null, shufPos = 0;
+function shuffled(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function startShuffle(fromCurrent) {
+  let order = shuffled(queue.map((_, i) => i));
+  if (fromCurrent && state.loaded) order = [state.i].concat(order.filter(i => i !== state.i));
+  shuffleOrder = order; shufPos = 0; updateShuffleUI();
+}
+function stopShuffle() { if (!shuffleOrder) return; shuffleOrder = null; updateShuffleUI(); }
+function updateShuffleUI() {
+  const on = !!shuffleOrder;
+  $("#s-shuffle").classList.toggle("on", on);
+  $("#s-shuffle").setAttribute("aria-pressed", String(on));
+  $("#shuffle-btn .lbl").textContent = on ? "Neu mischen" : "Zufallswiedergabe";
+  if (state.loaded) $("#m-album").textContent = (on ? "Zufall · " : "") + queue[state.i].album.title;
+}
 function load(i) {
   state.i = (i + queue.length) % queue.length;
   const t = queue[state.i];
   audio.src = t.file;
   state.loaded = true;
   $("#mini").hidden = false; updateDock();
-  $("#m-art").src = t.cover; $("#m-title").textContent = t.title; $("#m-album").textContent = t.album.title;
+  $("#m-art").src = t.cover; $("#m-title").textContent = t.title; $("#m-album").textContent = (shuffleOrder ? "Zufall · " : "") + t.album.title;
   $("#s-art").src = t.cover; $("#s-bg").style.backgroundImage = "url('" + t.cover + "')";
   $("#s-title").textContent = t.title; $("#s-album").textContent = t.album.title;
   $("#t-dur").textContent = fmt(t.dur);
@@ -814,13 +869,14 @@ function load(i) {
 function play(i) {
   if (i !== undefined && (i !== state.i || !state.loaded)) load(i);
   else if (!state.loaded) load(state.i);
-  audio.play().catch(() => toast("Das Lied konnte nicht starten. Tippe noch einmal darauf.", true));
+  audio.play().catch(e => { if (e && e.name === "AbortError") return; toast("Das Lied konnte nicht starten. Tippe noch einmal darauf.", true); });
 }
 function toggle() { audio.paused ? play() : audio.pause(); }
 function syncPlaying() {
   state.playing = !audio.paused;
   const ic = state.playing ? ICON.pause : ICON.play, lbl = state.playing ? "Pause" : "Abspielen";
   for (const b of [$("#m-play"), $("#s-play")]) { b.innerHTML = ic; b.setAttribute("aria-label", lbl); }
+  if (state.playing && !$("#shared").hidden) { $("#shared").hidden = true; updateDock(); }
   rerender();
 }
 let dragging = false;
@@ -838,6 +894,7 @@ audio.addEventListener("play", syncPlaying);
 audio.addEventListener("pause", syncPlaying);
 /* After a song ends: continue within the same album; a single just stops. */
 audio.addEventListener("ended", () => {
+  if (shuffleOrder) { next(); return; }
   const cur = queue[state.i], nxt = queue[state.i + 1];
   if (nxt && cur.album.id !== SINGLE_GROUP.id && nxt.album.id === cur.album.id) play(state.i + 1);
   else syncPlaying();
@@ -852,8 +909,36 @@ $("#seek").addEventListener("change", e => {
   dragging = false;
   audio.currentTime = (e.target.value / 1000) * (audio.duration || queue[state.i].dur);
 });
-const prev = () => (audio.currentTime > 4 ? (audio.currentTime = 0) : play(state.i - 1));
-const next = () => play(state.i + 1);
+function prev() {
+  if (audio.currentTime > 4) { audio.currentTime = 0; return; }
+  if (shuffleOrder) { shufPos = Math.max(0, shufPos - 1); play(shuffleOrder[shufPos]); }
+  else play(state.i - 1);
+}
+function next() {
+  if (shuffleOrder) {
+    shufPos++;
+    if (shufPos >= shuffleOrder.length) startShuffle(false);
+    play(shuffleOrder[shufPos]);
+  } else play(state.i + 1);
+}
+$("#shuffle-btn").addEventListener("click", () => {
+  startShuffle(false);
+  play(shuffleOrder[0]);
+  toast("Zufallswiedergabe: alle " + queue.length + " Lieder, bunt gemischt.");
+});
+$("#s-shuffle").addEventListener("click", () => {
+  if (shuffleOrder) { stopShuffle(); toast("Zufallswiedergabe aus."); }
+  else { startShuffle(true); toast("Zufallswiedergabe an."); }
+});
+$("#s-share").addEventListener("click", async () => {
+  if (!state.loaded) return;
+  const t = queue[state.i];
+  const url = new URL("lied/" + t.id + "/", location.href.split("#")[0]).href;
+  const data = { title: t.title, text: "Hör mal rein: „" + t.title + "“ von Baldur", url };
+  try { if (navigator.share) { await navigator.share(data); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(url); toast("Link zum Lied kopiert."); }
+  catch (e) { toast("Link: " + url); }
+});
 $("#m-play").addEventListener("click", toggle);
 $("#s-play").addEventListener("click", toggle);
 $("#m-next").addEventListener("click", next);
@@ -898,7 +983,7 @@ document.addEventListener("click", e => {
   const tr = e.target.closest("[data-track]");
   if (tr) {
     const i = queue.findIndex(t => t.id === tr.dataset.track);
-    if (i === state.i && state.loaded) toggle(); else play(i);
+    if (i === state.i && state.loaded) toggle(); else { stopShuffle(); play(i); }
     return;
   }
   const d = e.target.closest("[data-dl]");
@@ -1126,7 +1211,15 @@ function hideIntro() {
   el.classList.add("leaving");
   setTimeout(() => { el.hidden = true; el.classList.remove("leaving"); document.body.style.overflow = document.querySelector(".sheet.open") ? "hidden" : ""; }, 450);
 }
-$("#intro-go").addEventListener("click", hideIntro);
+$("#intro-go").addEventListener("click", () => {
+  hideIntro();
+  if (sharedIdx !== null && !state.playing) { $("#shared").hidden = false; updateDock(); }
+});
+$("#intro-play").addEventListener("click", () => {
+  play(sharedIdx);
+  go(parseHash(curHash()).base + "~p");
+  hideIntro();
+});
 $("#open-welcome").addEventListener("click", showIntro);
 if (seenBefore) $("#hello").textContent = "Willkommen zurück!";
 else showIntro();
@@ -1137,14 +1230,40 @@ $("#s-play").innerHTML = ICON.play;
 renderHome();
 renderSelbar();
 renderPickSheet();
-/* An album link (#a-otter) opens that album; a leftover overlay step is dropped. */
+$("#shuffle-n").textContent = songs(queue.length);
+/* An album link (#a-otter) opens that album; a song link (#t-otterhand) opens its album (or the
+   overview for a single) with that song ready to play. A leftover overlay step is dropped. */
+var sharedIdx = null;
 (() => {
   const h = curHash(), r = parseHash(h);
-  const valid = r.album && ALBUMS.some(x => x.id === r.album) ? r.base : "";
+  let valid = r.album && ALBUMS.some(x => x.id === r.album) ? r.base : "";
+  if (r.base.startsWith("t-")) {
+    const i = queue.findIndex(t => t.id === r.base.slice(2));
+    if (i >= 0) { sharedIdx = i; valid = queue[i].album.id === SINGLE_GROUP.id ? "" : "a-" + queue[i].album.id; }
+  }
   navStack.push(valid);
   if (h !== valid) { try { location.replace("#" + valid); replacing = true; } catch (e) {} }
   applyRoute(valid);
+  if (sharedIdx !== null) {
+    const t = queue[sharedIdx];
+    load(sharedIdx);
+    if (!$("#intro").hidden) {
+      $("#intro-shared-text").innerHTML = "Dir wurde ein Lied geschickt:<br><b>" + esc(t.title) + "</b>";
+      $("#intro-shared").hidden = false;
+      $("#shared-title").textContent = t.title;
+    } else {
+      $("#shared-title").textContent = t.title;
+      $("#shared").hidden = false; updateDock();
+    }
+  }
 })();
+$("#shared-play").addEventListener("click", () => {
+  if (sharedIdx === null) return;
+  play(sharedIdx);
+  $("#shared").hidden = true; updateDock();
+  go(parseHash(curHash()).base + "~p");
+});
+$("#shared-x").addEventListener("click", () => { $("#shared").hidden = true; updateDock(); });
 </script>
 </body>
 </html>
