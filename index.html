@@ -678,12 +678,15 @@ window.addEventListener("hashchange", () => {
    overview lands on the step below it, and the page asks before the visitor leaves. Browsers only
    honour such a step after a real tap, so it is added on the visitor's first tap on the overview. */
 let guarded = false;
+/* Browsers only keep a step for "back" that was added during a real tap or key press. */
 function guard(e) {
   if (e && e.target && e.target.closest && e.target.closest("#exit")) return;
   if (guarded || curHash() !== "") return;
   guarded = true; go("sk");
 }
-document.addEventListener("pointerdown", guard, { capture: true });
+/* On phones a touch only counts as a real tap once the finger lifts (a scroll never counts),
+   so the step is added on "click", not on "pointerdown"; Chrome skips steps added without a real tap. */
+document.addEventListener("click", guard, { capture: true });
 document.addEventListener("keydown", guard, { capture: true });
 function showExit() {
   const n = picked.size;
