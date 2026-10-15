@@ -104,6 +104,8 @@ h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2.5rem, 12v
 .welcome { max-width: 32em; margin: 8px 0 0; display: grid; gap: 12px; }
 .welcome p { margin: 0; color: var(--fg); opacity: .88; font-size: 1.03rem; line-height: 1.6; text-wrap: pretty; }
 .welcome .wish { font-family: var(--display); font-size: 1.22rem; line-height: 1.4; opacity: 1; color: var(--gold-hi); margin-top: 6px; text-wrap: balance; }
+.welcome .hint-box { padding: 14px 16px; border-left: 2px solid var(--gold); background: rgba(217,169,69,.07); border-radius: 0 12px 12px 0; text-align: left; font-size: .98rem; }
+.welcome .hint-box b { color: var(--gold-hi); font-weight: 600; }
 .welcome .sign { font-family: var(--display); color: var(--gold); font-size: 1.05rem; opacity: 1; }
 .welcome .sign::before { content: "– "; }
 .howto { list-style: none; margin: 18px 0 4px; padding: 14px 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: 100%; max-width: 440px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
@@ -539,8 +541,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <button class="pill primary" id="intro-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Lied anhören</button>
     </div>
         <div class="welcome">
-          <p>Hier erwartet dich eine vielfältige Sammlung unterschiedlicher Musik von Baldur, mit verschiedenen Klängen, Stimmungen und Melodien, die dich auf ganz unterschiedliche Weise begleiten können.</p>
+          <p>Hier erwartet dich eine vielfältige Sammlung unterschiedlicher Musik von Baldur – mit verschiedenen Klängen, Stimmungen und Melodien, die dich auf ganz unterschiedliche Weise begleiten können.</p>
           <p>Nimm dir einen Moment Zeit, höre dich in Ruhe durch die Sammlung und entdecke die Musik ganz in deinem eigenen Tempo.</p>
+          <p class="hint-box"><b>Ein kleiner Tipp:</b> Manche Lieder entfalten ihre besondere Wirkung erst dann, wenn du ihnen deine volle Aufmerksamkeit schenkst. Höre sie am besten mit Kopfhörern oder genieße sie bei einer entspannten Autofahrt. Denn manchmal sind es nicht allein die Töne, die eine Melodie ausmachen, sondern vor allem die Worte, die sie tragen. Hinter den Texten stecken Gedanken, Gefühle und Geschichten, die vielleicht auch etwas in dir berühren.</p>
           <p>Wenn dir etwas gefällt, kannst du alle Alben, Singles und Lieder direkt für dich herunterladen.</p>
           <p class="wish">Viel Freude beim Entdecken, Zuhören und Eintauchen in meine Musikwelt.</p>
           <p class="sign">Baldur</p>
