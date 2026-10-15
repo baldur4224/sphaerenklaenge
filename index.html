@@ -276,6 +276,12 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .g-done .tick svg { width: 32px; height: 32px; }
 .g-done p { margin: 0; color: var(--muted); max-width: 34ch; }
 .t-sub.got, .card-sub .got { color: var(--gold); }
+/* Leave confirmation */
+.exit { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px max(20px, env(safe-area-inset-left, 0px)); background: rgba(6,5,3,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.exit-card { width: 100%; max-width: 360px; background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line); border-radius: 18px; padding: 24px 22px; display: grid; gap: 14px; text-align: center; box-shadow: 0 30px 60px -20px rgba(0,0,0,.9); }
+.exit-card h2 { font-family: var(--display); font-weight: 400; font-size: 1.6rem; margin: 0; line-height: 1.15; }
+.exit-card p { margin: 0; color: var(--muted); }
+.exit-actions { display: grid; gap: 10px; margin-top: 4px; }
 .toast { position: fixed; z-index: 40; left: 50%; transform: translateX(-50%); bottom: calc(var(--dock-h) + 14px); width: max-content; max-width: calc(100vw - 32px); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 11px 16px; font-size: .92rem; box-shadow: 0 14px 30px -10px rgba(0,0,0,.8); }
 .toast.err { border-color: var(--danger); }
 
@@ -431,6 +437,16 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
   </div>
 </section>
 
+<div class="exit" id="exit" role="dialog" aria-modal="true" aria-labelledby="exit-title" hidden>
+  <div class="exit-card">
+    <h2 class="gold" id="exit-title">SphärenKlänge verlassen?</h2>
+    <p id="exit-text"></p>
+    <div class="exit-actions">
+      <button class="pill primary" id="exit-stay">Hierbleiben</button>
+      <button class="pill" id="exit-leave">Verlassen</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <audio id="audio" preload="metadata"></audio>
 
@@ -632,7 +648,7 @@ const curHash = () => { try { return decodeURIComponent(location.hash.slice(1));
 function parseHash(h) {
   const m = h.match(/~(p|s|d)$/);
   const base = m ? h.slice(0, -2) : h;
-  return { base, overlay: m ? m[1] : null, album: base.startsWith("a-") ? base.slice(2) : null };
+  return { base, overlay: m ? m[1] : null, album: base.startsWith("a-") ? base.slice(2) : null, home: base === "" || base === "sk" };
 }
 function go(h) { if (curHash() === h) applyRoute(h); else location.hash = h; }
 function replaceTo(h) { if (curHash() === h) { navStack[navStack.length - 1] = h; applyRoute(h); return; } replacing = true; location.replace("#" + h); }
@@ -649,10 +665,55 @@ function applyRoute(h) {
 }
 window.addEventListener("hashchange", () => {
   const h = curHash();
+  const prev = navStack[navStack.length - 1];
+  if (!replacing && h === "" && guarded && prev !== undefined && parseHash(prev).base === "sk") {
+    navStack.pop(); guarded = false; applyRoute(h); showExit(); return;
+  }
   if (replacing) { replacing = false; navStack[navStack.length - 1] = h; }
   else if (navStack.length > 1 && navStack[navStack.length - 2] === h) navStack.pop();
   else if (navStack[navStack.length - 1] !== h) navStack.push(h);
   applyRoute(h);
+});
+/* Leaving: the overview sits on top of one extra history step ("#sk"). Pressing back from the
+   overview lands on the step below it, and the page asks before the visitor leaves. Browsers only
+   honour such a step after a real tap, so it is added on the visitor's first tap on the overview. */
+let guarded = false;
+function guard(e) {
+  if (e && e.target && e.target.closest && e.target.closest("#exit")) return;
+  if (guarded || curHash() !== "") return;
+  guarded = true; go("sk");
+}
+document.addEventListener("pointerdown", guard, { capture: true });
+document.addEventListener("keydown", guard, { capture: true });
+function showExit() {
+  const n = picked.size;
+  const parts = [];
+  if (n) parts.push(n === 1
+    ? "In deiner Auswahl liegt noch 1 Lied, das du nicht heruntergeladen hast. Es bleibt aber gespeichert, wenn du später wiederkommst."
+    : `In deiner Auswahl liegen noch ${n} Lieder, die du nicht heruntergeladen hast. Sie bleiben aber gespeichert, wenn du später wiederkommst.`);
+  if (state.playing) parts.push("Die Musik hört dann auf.");
+  if (!parts.length) parts.push("Schön, dass du reingehört hast.");
+  $("#exit-text").textContent = parts.join(" ");
+  $("#exit-leave").textContent = "Verlassen";
+  leaveHint = false;
+  $("#exit").hidden = false;
+  setTimeout(() => $("#exit-stay").focus(), 30);
+}
+function stay() { $("#exit").hidden = true; guarded = true; go("sk"); }
+$("#exit-stay").addEventListener("click", stay);
+$("#exit").addEventListener("click", e => { if (e.target.id === "exit") stay(); });
+let leaveHint = false;
+$("#exit-leave").addEventListener("click", () => {
+  if (leaveHint) { $("#exit").hidden = true; leaveHint = false; return; }
+  audio.pause();
+  history.back();
+  /* Opened straight from a link there is no page to go back to; the phone's own back button closes it then. */
+  setTimeout(() => {
+    if (document.visibilityState !== "visible" || $("#exit").hidden) return;
+    $("#exit-text").textContent = "Drück jetzt einfach noch einmal die Zurück-Taste deines Handys.";
+    $("#exit-leave").textContent = "Okay";
+    leaveHint = true;
+  }, 450);
 });
 const openOverlay = k => go(parseHash(curHash()).base + "~" + k);
 const closeOverlay = () => { if (parseHash(curHash()).overlay) stepBack(parseHash(curHash()).base); };
@@ -676,7 +737,7 @@ $("#s-album").addEventListener("click", () => {
   if (id === SINGLE_GROUP.id) { replaceTo(""); setTimeout(() => $("#sec-singles").scrollIntoView({ behavior: "smooth", block: "start" }), 80); }
   else replaceTo("a-" + id);
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeOverlay(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("#exit").hidden) stay(); else closeOverlay(); } });
 document.querySelectorAll(".sheet").forEach(sh => {
   let y = null;
   sh.addEventListener("touchstart", e => { y = sh.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
