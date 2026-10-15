@@ -1,0 +1,1037 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SphärenKlänge · Baldur's Kreativa</title>
+<meta name="description" content="SphärenKlänge: die Musik von Baldur's Kreativa. Alben und Singles zum Reinhören und Herunterladen.">
+<meta name="theme-color" content="#0b0907">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SphärenKlänge">
+<meta property="og:description" content="Die Musik von Baldur's Kreativa: Alben und Singles zum Reinhören und Herunterladen.">
+<meta property="og:image" content="https://baldur4224.github.io/sphaerenklaenge/img/vorschau.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://baldur4224.github.io/sphaerenklaenge/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+<link rel="preload" href="fonts/marcellus.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face { font-family: "Marcellus"; src: url("fonts/marcellus.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Figtree"; src: url("fonts/figtree-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Figtree"; src: url("fonts/figtree-500.woff2") format("woff2"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Figtree"; src: url("fonts/figtree-600.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Figtree"; src: url("fonts/figtree-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+:root { padding-top: env(safe-area-inset-top, 0px); }
+/* Layout: logo stage → title + intro → album grid → singles list → "everything" card.
+   Listening and choosing are separate: every song has a ＋ to add it to "Deine Auswahl";
+   a dock at the bottom holds the selection bar and the mini player; the selection downloads as one sorted ZIP. */
+:root {
+  color-scheme: dark;
+  --bg: #0b0907;
+  --surface: #17120c;
+  --surface-2: #231b11;
+  --line: rgba(217, 169, 69, 0.18);
+  --fg: #f2e9d8;
+  --muted: #a6977f;
+  --gold: #d9a945;
+  --gold-hi: #f8e2a0;
+  --gold-deep: #8a5d1c;
+  --on-gold: #1a1206;
+  --danger: #ef8f6a;
+  --display: "Marcellus", "Trajan Pro", "Cormorant Garamond", Georgia, serif;
+  --body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --dock-h: 0px;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--bg); }
+body {
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 calc(var(--dock-h) + 40px);
+  overflow-x: hidden;
+}
+.wrap { max-width: 920px; margin: 0 auto; }
+button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
+button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px solid var(--gold-hi); outline-offset: 3px; border-radius: 8px; }
+.gold { background: linear-gradient(180deg, var(--gold-hi) 10%, var(--gold) 55%, var(--gold-deep) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.plus-inline { display: inline-grid; place-items: center; width: 1.35em; height: 1.35em; border-radius: 50%; border: 1.5px solid var(--gold); color: var(--gold); font-weight: 700; font-size: .85em; line-height: 1; vertical-align: -0.15em; }
+
+/* Buttons */
+.pill { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: 999px; font-weight: 600; border: 1px solid var(--line); background: var(--surface); transition: border-color .2s, filter .2s, transform .1s, background .2s; }
+.pill:hover { border-color: var(--gold); }
+.pill:active { transform: scale(.97); }
+.pill svg { width: 18px; height: 18px; flex: none; }
+.pill.primary { background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, #b7842f); color: var(--on-gold); border-color: transparent; }
+.pill.primary:hover { filter: brightness(1.06); }
+.pill.on { border-color: var(--gold); color: var(--gold-hi); background: rgba(217,169,69,.1); }
+.pill[disabled] { opacity: .8; cursor: progress; }
+.pill .sub { font-weight: 500; opacity: .72; font-size: .85em; font-variant-numeric: tabular-nums; }
+.round { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; flex: none; color: var(--muted); transition: color .2s, background .2s; }
+.round:hover { color: var(--gold-hi); }
+.round svg { width: 20px; height: 20px; }
+.round.play-lg { width: 56px; height: 56px; background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #b7842f); color: var(--on-gold); box-shadow: 0 8px 24px -10px rgba(217,169,69,.7); }
+.round.play-lg svg { width: 24px; height: 24px; }
+.round.play-lg:hover { filter: brightness(1.06); color: var(--on-gold); }
+/* The ＋ / ✓ toggle */
+.mark .ring { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid rgba(217,169,69,.55); display: grid; place-items: center; color: var(--gold); transition: background .2s, border-color .2s, transform .15s; }
+.mark .ring svg { width: 16px; height: 16px; }
+.mark:hover .ring { border-color: var(--gold-hi); }
+.mark.on .ring { background: var(--gold); border-color: var(--gold); color: var(--on-gold); }
+.mark.pop .ring { transform: scale(1.18); }
+
+/* ---------- Hero ---------- */
+.stage { position: relative; margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px))); }
+.stage img { display: block; width: 100%; max-width: 980px; margin: 0 auto; aspect-ratio: 1536 / 659; object-fit: cover;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 68%, transparent 100%), linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 68%, transparent 100%), linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%); mask-composite: intersect; }
+.hero { text-align: center; display: grid; justify-items: center; gap: 10px; margin-top: -6px; }
+.ornament { width: min(280px, 70%); height: 14px; color: var(--gold); opacity: .9; }
+.presents { font-size: .72rem; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding-left: .32em; }
+h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2.5rem, 12vw, 4.4rem); line-height: 1; margin: 0; letter-spacing: .01em; filter: drop-shadow(0 0 22px rgba(217,169,69,.28)); padding-bottom: .06em; }
+.intro { max-width: 31em; margin: 6px 0 0; color: var(--fg); opacity: .9; font-size: 1.02rem; text-wrap: balance; }
+.stats { color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; }
+
+/* ---------- Sections ---------- */
+.sec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 44px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); scroll-margin-top: 16px; }
+.sec-head h2 { font-family: var(--display); font-weight: 400; font-size: 1.55rem; margin: 0; color: var(--gold-hi); }
+.sec-head span { color: var(--muted); font-size: .85rem; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 14px; }
+.card { text-align: left; display: grid; gap: 9px; min-width: 0; align-content: start; }
+.card-art { position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); transition: transform .25s, box-shadow .25s; }
+.card-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card:hover .card-art { transform: translateY(-2px); box-shadow: 0 14px 28px -14px rgba(217,169,69,.55); }
+.card-title { font-family: var(--display); font-size: 1.08rem; line-height: 1.2; overflow-wrap: anywhere; }
+.card-sub { color: var(--muted); font-size: .84rem; margin-top: 2px; }
+.card .now { position: absolute; right: 8px; top: 8px; width: 30px; height: 30px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: grid; place-items: center; }
+.card .picked { position: absolute; left: 8px; bottom: 8px; display: inline-flex; align-items: center; gap: 4px; background: var(--gold); color: var(--on-gold); border-radius: 999px; font-size: .74rem; font-weight: 700; padding: 3px 9px 3px 7px; box-shadow: 0 4px 12px rgba(0,0,0,.5); }
+.card .picked svg { width: 12px; height: 12px; }
+
+.list { list-style: none; margin: 0; padding: 0; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) 48px; align-items: center; border-bottom: 1px solid var(--line); }
+.row:first-child { border-top: 1px solid var(--line); }
+.row-main { display: grid; align-items: center; gap: 14px; text-align: left; border-radius: 10px; padding: 8px 6px 8px 0; }
+.row-main:hover { background: rgba(217,169,69,.06); }
+.single .row-main { grid-template-columns: 60px minmax(0, 1fr) auto; min-height: 80px; }
+.track .row-main { grid-template-columns: 30px minmax(0, 1fr) auto; min-height: 60px; padding-left: 4px; }
+.row .mark { width: 48px; height: 48px; display: grid; place-items: center; }
+.thumb { position: relative; width: 60px; height: 60px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb .ov { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(11,9,7,.55); }
+.t-no { color: var(--muted); text-align: center; font-variant-numeric: tabular-nums; font-size: .95rem; display: grid; place-items: center; }
+.t-title { min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+.single .t-title { font-family: var(--display); font-size: 1.05rem; font-weight: 400; }
+.t-sub { display: block; color: var(--muted); font-family: var(--body); font-size: .8rem; margin-top: 2px; }
+.t-dur { color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; }
+.current .t-title { color: var(--gold-hi); }
+.eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 14px; }
+.eq i { width: 3px; background: var(--gold); border-radius: 1px; height: 40%; }
+.playing .eq i, .card .now .eq i { animation: eq 0.9s ease-in-out infinite; }
+.card .now .eq i { background: var(--on-gold); }
+.eq i:nth-child(2) { animation-delay: -.3s; height: 80%; }
+.eq i:nth-child(3) { animation-delay: -.6s; height: 60%; }
+@keyframes eq { 0%,100% { height: 30%; } 50% { height: 100%; } }
+
+/* Everything card */
+.take { margin-top: 48px; border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, var(--surface-2), var(--surface)); padding: 22px 20px; display: grid; gap: 14px; }
+.take h2 { font-family: var(--display); font-weight: 400; font-size: 1.45rem; margin: 0; color: var(--gold-hi); }
+.take p { margin: 0; color: var(--muted); max-width: 52ch; }
+.take .pill { justify-self: start; }
+details.help { border-top: 1px solid var(--line); padding-top: 4px; }
+details.help summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 600; }
+details.help summary::-webkit-details-marker { display: none; }
+details.help summary svg { width: 18px; height: 18px; color: var(--gold); transition: transform .2s; flex: none; }
+details.help[open] summary svg { transform: rotate(180deg); }
+.help-body { display: grid; gap: 14px; padding: 4px 0; }
+.help-body h3 { margin: 0 0 4px; font-size: .76rem; letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+.help-body ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.help-body p { color: var(--muted); }
+footer { text-align: center; color: var(--muted); font-size: .8rem; margin-top: 36px; display: grid; gap: 6px; justify-items: center; }
+footer .share { margin-bottom: 14px; }
+footer .mark-name { font-family: var(--display); font-size: 1rem; color: var(--gold); }
+
+/* ---------- Album view ---------- */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; align-items: center; gap: 4px; min-height: 56px; margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px))); padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); background: rgba(11,9,7,.9); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid transparent; transition: border-color .2s; }
+.topbar.scrolled { border-bottom-color: var(--line); }
+.back { display: inline-flex; align-items: center; gap: 2px; min-height: 44px; padding: 0 10px 0 4px; color: var(--gold-hi); font-weight: 600; border-radius: 10px; flex: none; }
+.back svg { width: 22px; height: 22px; }
+.topbar-title { font-family: var(--display); font-size: 1.02rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; opacity: 0; transition: opacity .2s; }
+.topbar.scrolled .topbar-title { opacity: 1; }
+.album-head { display: grid; justify-items: center; text-align: center; gap: 12px; padding-top: 6px; }
+.album-cover { width: min(74vw, 300px); aspect-ratio: 1; max-width: 100%; object-fit: cover; border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 30px 60px -28px rgba(217,169,69,.5); }
+.album-eyebrow { font-size: .72rem; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 6px; }
+.album-head h2 { font-family: var(--display); font-weight: 400; font-size: clamp(2rem, 8.5vw, 2.8rem); line-height: 1.05; margin: 2px 0 0; text-wrap: balance; }
+.album-meta { color: var(--muted); font-size: .9rem; font-variant-numeric: tabular-nums; }
+.album-actions { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 14px; flex-wrap: wrap; }
+.album-list { margin-top: 26px; }
+.hint { color: var(--muted); font-size: .84rem; text-align: center; margin: 12px 0 0; }
+.more { margin-top: 40px; }
+.more h3 { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; font-weight: 700; }
+.strip { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; margin-left: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(16px, env(safe-area-inset-right, 0px))); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.strip .card { flex: 0 0 120px; scroll-snap-align: start; }
+.strip .card-title { font-size: .95rem; }
+
+/* ---------- Dock: selection bar + mini player ---------- */
+.dock { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; background: rgba(18,14,9,.97); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.dock:empty, .dock.idle { display: none; }
+.dock-row { padding-left: max(10px, env(safe-area-inset-left, 0px)); padding-right: max(10px, env(safe-area-inset-right, 0px)); }
+.dock-in { max-width: 920px; margin: 0 auto; display: flex; align-items: center; gap: 8px; }
+.selbar { padding-top: 10px; padding-bottom: 10px; background: linear-gradient(90deg, rgba(217,169,69,.16), rgba(217,169,69,.04)); border-top: 1px solid var(--line); }
+.mini + .selbar[hidden] { display: none; }
+.sel-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; text-align: left; padding: 2px; border-radius: 10px; }
+.sel-count { width: 40px; height: 40px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: grid; place-items: center; font-weight: 700; font-variant-numeric: tabular-nums; flex: none; }
+.sel-text { min-width: 0; }
+.sel-title { display: block; font-weight: 600; }
+.sel-sub { display: block; color: var(--muted); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sel-sub u { text-decoration-color: rgba(217,169,69,.6); text-underline-offset: 2px; }
+.selbar .pill { min-height: 44px; padding: 0 16px; }
+.mini { padding-top: 8px; padding-bottom: 8px; position: relative; }
+.mini-bar { position: absolute; top: -1px; left: 0; height: 2px; background: var(--gold); width: 0; }
+.mini-open { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; text-align: left; padding: 2px; border-radius: 10px; }
+.mini-open img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex: none; border: 1px solid var(--line); }
+.mini-text { min-width: 0; }
+.mini-title { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-album { display: block; color: var(--muted); font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .round { color: var(--fg); }
+.mini .round.play { background: var(--gold); color: var(--on-gold); }
+
+/* ---------- Sheets (full player, selection) ---------- */
+.sheet { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow-y: auto; overscroll-behavior: contain; padding-top: env(safe-area-inset-top, 0px); padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); transform: translateY(100%); visibility: hidden; transition: transform .32s cubic-bezier(.2,.8,.2,1), visibility 0s .32s; }
+.sheet.open { transform: none; visibility: visible; transition: transform .32s cubic-bezier(.2,.8,.2,1); }
+.sheet-bg { position: fixed; inset: -40px; background-size: cover; background-position: center; filter: blur(50px) brightness(.35) saturate(1.2); z-index: -1; pointer-events: none; }
+.sheet-in { max-width: 460px; margin: 0 auto; display: grid; gap: 18px; position: relative; }
+.sheet-top { display: flex; align-items: center; justify-content: space-between; min-height: 56px; }
+.sheet-top .label { font-family: var(--display); font-size: 1rem; color: var(--gold); text-align: center; flex: 1; }
+.sheet-top .round { color: var(--fg); }
+.big-cover { width: 100%; aspect-ratio: 1; max-width: 100%; object-fit: cover; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 30px 70px -24px rgba(0,0,0,.9), 0 0 60px -20px rgba(217,169,69,.4); }
+.now-title { font-family: var(--display); font-weight: 400; font-size: 1.6rem; line-height: 1.15; margin: 0; text-wrap: balance; }
+.now-album { color: var(--gold); font-weight: 600; text-align: left; padding: 4px 0; }
+.now-album:hover { text-decoration: underline; }
+.seek-wrap { display: grid; gap: 2px; }
+.times { display: flex; justify-content: space-between; color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; margin: 0; }
+input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--gold) var(--p, 0%), rgba(242,233,216,.2) var(--p, 0%)); }
+input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: rgba(242,233,216,.2); }
+input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--gold); }
+input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--gold-hi); margin-top: -6px; border: 0; }
+input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--gold-hi); border: 0; }
+.controls { display: flex; align-items: center; justify-content: center; gap: 28px; }
+.controls .round { width: 56px; height: 56px; color: var(--fg); }
+.controls .round svg { width: 28px; height: 28px; }
+.controls .round.play { width: 76px; height: 76px; background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #b7842f); color: var(--on-gold); box-shadow: 0 10px 30px -10px rgba(217,169,69,.7); }
+.controls .round.play svg { width: 32px; height: 32px; }
+.sheet-pick { justify-self: center; }
+.lyrics { border-top: 1px solid var(--line); padding-top: 18px; }
+.lyrics h3 { font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
+.lyrics .part { color: var(--muted); font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; margin: 16px 0 4px; }
+.lyrics p { margin: 0; line-height: 1.65; }
+
+/* Selection sheet */
+.pick-sum { text-align: center; display: grid; gap: 4px; }
+.pick-sum h2 { font-family: var(--display); font-weight: 400; font-size: 1.9rem; margin: 0; }
+.pick-sum div { color: var(--muted); font-variant-numeric: tabular-nums; }
+.pick-group { display: grid; gap: 0; }
+.pick-head { display: flex; align-items: center; gap: 10px; padding: 14px 0 8px; }
+.pick-head img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; border: 1px solid var(--line); }
+.pick-head span { font-family: var(--display); color: var(--gold-hi); font-size: 1.05rem; }
+.pick-row { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--line); min-height: 52px; }
+.pick-row .t-title { flex: 1; }
+.pick-actions { display: grid; gap: 10px; justify-items: center; padding-top: 6px; }
+.pick-actions .pill.primary { width: 100%; max-width: 360px; }
+.linkish { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 0 8px; }
+.pick-empty { text-align: center; color: var(--muted); padding: 30px 0; }
+
+/* Download guide */
+.g-box { border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 16px; display: grid; gap: 12px; }
+.g-label { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); font-weight: 700; }
+.g-file { display: flex; gap: 10px; align-items: center; font-weight: 600; overflow-wrap: anywhere; }
+.g-file svg, .g-tree svg { width: 20px; height: 20px; color: var(--gold); flex: none; }
+.g-tree { list-style: none; margin: 0 0 0 9px; padding: 0 0 0 16px; border-left: 1px dashed rgba(217,169,69,.4); display: grid; gap: 8px; }
+.g-tree li { display: flex; gap: 8px; align-items: center; min-width: 0; }
+.g-tree b { font-weight: 500; overflow-wrap: anywhere; }
+.g-tree span { color: var(--muted); font-size: .84rem; white-space: nowrap; }
+.g-note, .g-small { color: var(--muted); font-size: .88rem; margin: 0; }
+.g-small { text-align: center; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px; gap: 4px; }
+.seg button { min-height: 40px; border-radius: 999px; font-weight: 600; color: var(--muted); }
+.seg button[aria-selected="true"] { background: var(--surface-2); color: var(--gold-hi); box-shadow: inset 0 0 0 1px var(--gold); }
+.g-steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 14px; }
+.g-steps li { counter-increment: s; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; align-items: start; }
+.g-steps li::before { content: counter(s); width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--gold); color: var(--gold); display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
+.g-steps b { color: var(--gold-hi); font-weight: 600; }
+.g-go { width: 100%; }
+.g-done { text-align: center; display: grid; gap: 10px; justify-items: center; }
+.g-done .tick { width: 64px; height: 64px; border-radius: 50%; background: var(--gold); color: var(--on-gold); display: grid; place-items: center; }
+.g-done .tick svg { width: 32px; height: 32px; }
+.g-done p { margin: 0; color: var(--muted); max-width: 34ch; }
+.t-sub.got, .card-sub .got { color: var(--gold); }
+.toast { position: fixed; z-index: 40; left: 50%; transform: translateX(-50%); bottom: calc(var(--dock-h) + 14px); width: max-content; max-width: calc(100vw - 32px); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 11px 16px; font-size: .92rem; box-shadow: 0 14px 30px -10px rgba(0,0,0,.8); }
+.toast.err { border-color: var(--danger); }
+
+@media (min-width: 640px) {
+  .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px 20px; }
+}
+@media (min-width: 900px) {
+  .album-head { grid-template-columns: 300px minmax(0, 1fr); justify-items: start; text-align: left; gap: 32px; align-items: end; }
+  .album-cover { width: 300px; }
+  .album-actions { justify-content: flex-start; }
+  .album-head + .album-list + .hint { text-align: left; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <!-- Overview -->
+  <main id="home">
+    <div class="stage"><img src="img/logo.jpg" alt="Baldur's Kreativa"></div>
+    <header class="hero">
+      <div class="presents">präsentiert</div>
+      <h1 class="gold">SphärenKlänge</h1>
+      <svg class="ornament" viewBox="0 0 280 14" fill="none" aria-hidden="true"><path d="M0 7h118M162 7h118" stroke="currentColor" stroke-width="1"/><path d="M140 1l6 6-6 6-6-6z" fill="currentColor"/><circle cx="124" cy="7" r="1.6" fill="currentColor"/><circle cx="156" cy="7" r="1.6" fill="currentColor"/></svg>
+      <p class="intro">Hier findest du alle Lieder von Baldur. Hör in Ruhe rein und tippe bei jedem Lied, das dir gefällt, auf <span class="plus-inline" aria-label="Plus">+</span>. Zum Schluss lädst du deine Auswahl mit einem Tipp herunter, fertig sortiert in Ordnern.</p>
+      <div class="stats" id="stats"></div>
+    </header>
+
+    <div class="sec-head" id="sec-albums"><h2>Alben</h2><span>Tippe ein Cover an</span></div>
+    <div class="grid" id="grid"></div>
+
+    <div class="sec-head" id="sec-singles"><h2>Singles</h2><span>Tippe zum Reinhören</span></div>
+    <ol class="list" id="singles"></ol>
+
+    <section class="take" aria-labelledby="take-title">
+      <h2 id="take-title">Alles auf einmal</h2>
+      <p id="take-text"></p>
+      <button class="pill" data-guide="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg><span class="lbl">Ganze Sammlung laden</span><span class="sub" id="all-size"></span></button>
+    </section>
+
+    <footer><button class="pill share" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13M7 8l5-5 5 5M5 14v6h14v-6"/></svg>Seite teilen</button><span class="mark-name">Baldur's Kreativa</span><span>© 2026 · Zum Hören und Behalten, nicht zum Weiterverkaufen.</span></footer>
+  </main>
+
+  <!-- Album -->
+  <main id="album" hidden>
+    <div class="topbar" id="topbar">
+      <button class="back" id="back" aria-label="Zurück zur Übersicht"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Übersicht</button>
+      <div class="topbar-title" id="topbar-title"></div>
+    </div>
+    <div class="album-head">
+      <img class="album-cover" id="a-cover" src="img/logo.jpg" alt="">
+      <div>
+        <div class="album-eyebrow">Album</div>
+        <h2 class="gold" id="a-title"></h2>
+        <div class="album-meta" id="a-meta"></div>
+        <div class="album-actions">
+          <button class="round play-lg" id="a-play" aria-label="Album abspielen"></button>
+          <button class="pill" id="a-pick"></button>
+        </div>
+      </div>
+    </div>
+    <ol class="list album-list" id="tracks"></ol>
+    <p class="hint">Tippe ein Lied an zum Anhören. Mit <span class="plus-inline" aria-label="Plus">+</span> kommt es in deine Auswahl.</p>
+    <div class="more">
+      <h3>Weitere Alben</h3>
+      <div class="strip" id="strip"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Dock -->
+<div class="dock idle" id="dock">
+  <div class="dock-row mini" id="mini" hidden>
+    <div class="mini-bar" id="mini-bar"></div>
+    <div class="dock-in">
+      <button class="mini-open" id="mini-open" aria-label="Player öffnen">
+        <img id="m-art" src="img/logo.jpg" alt="">
+        <span class="mini-text"><span class="mini-title" id="m-title"></span><span class="mini-album" id="m-album"></span></span>
+      </button>
+      <button class="round play" id="m-play" aria-label="Abspielen"></button>
+      <button class="round" id="m-next" aria-label="Nächstes Lied"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+    </div>
+  </div>
+  <div class="dock-row selbar" id="selbar" hidden>
+    <div class="dock-in">
+      <button class="sel-open" id="sel-open" aria-label="Auswahl ansehen">
+        <span class="sel-count" id="sel-count">0</span>
+        <span class="sel-text"><span class="sel-title" id="sel-title"></span><span class="sel-sub"><span id="sel-size"></span> · <u>ansehen</u></span></span>
+      </button>
+      <button class="pill primary" data-guide="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg><span class="lbl">Herunterladen</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Full player -->
+<section class="sheet" id="sheet" aria-label="Player" aria-hidden="true">
+  <div class="sheet-bg" id="s-bg"></div>
+  <div class="sheet-in">
+    <div class="sheet-top">
+      <button class="round" id="s-close" aria-label="Player schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="label">SphärenKlänge</div>
+      <span style="width:44px" aria-hidden="true"></span>
+    </div>
+    <img class="big-cover" id="s-art" src="img/logo.jpg" alt="">
+    <div>
+      <h2 class="now-title" id="s-title"></h2>
+      <button class="now-album" id="s-album"></button>
+    </div>
+    <div class="seek-wrap">
+      <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Position im Lied">
+      <div class="times"><span id="t-cur">0:00</span><span id="t-dur">0:00</span></div>
+    </div>
+    <div class="controls">
+      <button class="round" id="s-prev" aria-label="Vorheriges Lied"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button class="round play" id="s-play" aria-label="Abspielen"></button>
+      <button class="round" id="s-next" aria-label="Nächstes Lied"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+    </div>
+    <button class="pill sheet-pick" id="s-pick"></button>
+    <button class="linkish" id="s-one" style="justify-self:center">Nur dieses Lied herunterladen (MP3)</button>
+    <div class="lyrics" id="lyrics" hidden></div>
+  </div>
+</section>
+
+<!-- Selection -->
+<section class="sheet" id="picksheet" aria-label="Deine Auswahl" aria-hidden="true">
+  <div class="sheet-in">
+    <div class="sheet-top">
+      <button class="round" id="p-close" aria-label="Auswahl schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="label">SphärenKlänge</div>
+      <span style="width:44px" aria-hidden="true"></span>
+    </div>
+    <div class="pick-sum"><h2 class="gold">Deine Auswahl</h2><div id="p-sum"></div></div>
+    <div id="p-list"></div>
+    <div class="pick-actions" id="p-actions">
+      <button class="pill primary" data-guide="pick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg><span class="lbl">Auswahl herunterladen</span><span class="sub" id="p-size"></span></button>
+      <button class="linkish" id="p-clear">Auswahl leeren</button>
+    </div>
+  </div>
+</section>
+
+<!-- Download guide -->
+<section class="sheet" id="guide" aria-label="Herunterladen" aria-hidden="true">
+  <div class="sheet-in">
+    <div class="sheet-top">
+      <button class="round" id="g-close" aria-label="Schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="label">SphärenKlänge</div>
+      <span style="width:44px" aria-hidden="true"></span>
+    </div>
+    <div class="sheet-in" id="g-body" style="gap:18px"></div>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<audio id="audio" preload="metadata"></audio>
+
+<script src="js/jszip.min.js"></script>
+<script>
+const COLLECTION = "SphärenKlänge";
+const ARTIST = "Baldur";
+const CATALOG = {"albums": [{"id": "frei-im-fall", "title": "Frei im Fall", "cover": "img/frei-im-fall.jpg", "tracks": [{"id": "fallen", "title": "Beim Fallen das Fliegen lernen", "dur": 243.5, "size": 7999003}, {"id": "sterne", "title": "Blick zu den Sternen", "dur": 253.3, "size": 8313873}, {"id": "lehrer", "title": "Der Fall ist mein Lehrer", "dur": 281.5, "size": 9215628}, {"id": "herzen", "title": "Mit dem Herzen voran", "dur": 233.4, "size": 7674897}]}, {"id": "im-leben-zuhause", "title": "Im Leben Zuhause", "cover": "img/im-leben-zuhause.jpg", "tracks": [{"id": "tanz", "title": "Tanz in den Wolken", "dur": 255.7, "size": 8404060}, {"id": "zellen", "title": "Tief in den Zellen", "dur": 274.0, "size": 8988367}, {"id": "mittendrin", "title": "Mitten drin", "dur": 146.3, "size": 4903227}, {"id": "schluessel", "title": "Alter Schlüssel", "dur": 159.5, "size": 5325388}]}, {"id": "seelenliebe", "title": "SeelenLiebe", "cover": "img/seelenliebe.jpg", "tracks": [{"id": "verlieben", "title": "Ich würde mich immer wieder in dich verlieben", "dur": 238.9, "size": 7822491}, {"id": "jedemleben", "title": "In jedem Leben", "dur": 226.6, "size": 7426187}, {"id": "seelentanz", "title": "SeelenTanz", "dur": 285.7, "size": 9317866}]}, {"id": "schattenwege", "title": "SchattenWege", "cover": "img/schattenwege.jpg", "tracks": [{"id": "alleinich", "title": "Allein im Ich", "dur": 173.7, "size": 5786124}, {"id": "alleinweg", "title": "Allein ist mein Weg", "dur": 156.6, "size": 5236931}, {"id": "licht", "title": "Warmes Licht auf Straßen", "dur": 236.8, "size": 7803233}, {"id": "farben", "title": "Farben unter der Haut", "dur": 198.6, "size": 6581090}]}, {"id": "otter", "title": "Otter", "cover": "img/otter.jpg", "tracks": [{"id": "otterhand", "title": "Ich halte deine OtterHand", "dur": 178.3, "size": 5912512}, {"id": "handinhand", "title": "Otter Hand in Hand", "dur": 216.4, "size": 5038264, "lyrics": "**Strophe 1**\nWir treiben auf dem Rücken,\nWellen kommen und gehen.\nDu legst deine Hand in meine –\nund plötzlich ist alles gut.\nKein Anker, kein Festland,\nnur du und ich und das Meer.\nWenn die Strömung zieht,\nDann nehme ich dich einfach mit.\n**Refrain**\nHalt mich fest, meine Otterhand,\nlass nicht los, egal was kommt.\nWenn ich mal abdrifte,\nzieh mich wieder zu dir ran.\nIch möchte dir meinen Lieblingsstein in deine Hände legen,\nden, den ich eigentlich nie mehr wollte von mir Geben,\nJetzt liegt er bei dir,\nund du hältst ihn fest, so wie ich dich.\n**Strophe 2**\nManchmal dreht sich die Welt,\nmanchmal verlier ich die Richtung.\nAber deine Hand bleibt,\ndu reichtst sie mir, entschlossen und frei.\nKein „vielleicht“, kein „später“,\nnur dieses einfache Halten.\nDu schläfst nicht los,\nund ich schwimme nicht weg.\n**Refrain**\nHalt mich fest, meine Otterhand,\nlass nicht los, egal was kommt.\nWenn ich mal abdrifte,\nzieh mich wieder zu dir ran.\nDu möchtest mir dein Lieblingsstein in meine Hände legen,\nden, den du eigentlich nie mehr wolltest von dir Geben,\nJetzt liegt er bei mir,\nund ich halte ihn fest, so wie du mich.\n**Bridge**\nWir brauchen kein Grund, kein Ufer,\nkein „für immer“ auf Papier.\nNur diese eine Hand,\ndie nicht aufgibt,\nund den Stein, den du mir schenkst,\nweil du mich magst,\neinfach so.\n**Refrain**\nHalt mich fest, meine Otterhand,\nlass nicht los, egal was kommt.\nWenn ich mal abdrifte,\nzieh mich wieder zu dir ran.\nIch möchte dir meinen Lieblingsstein in deine Hände legen,\nden, den ich eigentlich nie mehr wollte von mir Geben,\nJetzt liegt er bei dir,\nund du hältst ihn fest, so wie ich dich.\n**Outro**\nZwei Otter im großen Wasser.\nEine Hand. Ein Stein.\nUnd das Versprechen,\nnicht loszulassen."}]}, {"id": "karo-dame", "title": "Karo-Dame", "cover": "img/karo-dame.jpg", "tracks": [{"id": "karo1", "title": "Das Herz der Karo-Dame (Löwin 1)", "dur": 228.8, "size": 7483231}, {"id": "karo", "title": "Das Herz der Karo-Dame (Löwin 3)", "dur": 225.2, "size": 7368031}, {"id": "karoedm", "title": "Karo-Dame (EDM)", "dur": 203.2, "size": 6662139}]}], "singles": [{"id": "runa", "title": "Runa – Die Wölfin aus Asche und Sturm", "dur": 357.0, "size": 11663757, "cover": "img/runa.jpg"}, {"id": "bruecken", "title": "Über sieben Brücken musst du gehen (Cover)", "dur": 179.6, "size": 5956665, "cover": "img/bruecken.jpg"}, {"id": "traumfaenger", "title": "TraumFänger", "dur": 208.8, "size": 6871550, "cover": "img/traumfaenger.jpg"}, {"id": "bluehen", "title": "Wenn ich blüh", "dur": 253.9, "size": 8351825, "cover": "img/bluehen.jpg"}]};
+const ALBUMS = CATALOG.albums;
+const SINGLES = CATALOG.singles;
+const SINGLE_GROUP = { id: "singles", title: "Single" };
+
+const ICON = {
+  play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  eq: '<span class="eq" aria-hidden="true"><i></i><i></i><i></i></span>',
+};
+const $ = s => document.querySelector(s);
+const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+const fmtLong = s => { const m = Math.round(s / 60); return m >= 60 ? Math.floor(m / 60) + " Std. " + (m % 60) + " Min." : m + " Min."; };
+const mb = b => Math.max(1, Math.round(b / 1048576)) + " MB";
+const songs = n => n === 1 ? "1 Lied" : n + " Lieder";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const queue = ALBUMS.flatMap(a => a.tracks.map(t => ({ ...t, album: a, cover: a.cover, file: "songs/" + t.id + ".mp3" })))
+  .concat(SINGLES.map(t => ({ ...t, album: SINGLE_GROUP, file: "songs/" + t.id + ".mp3" })));
+const byId = id => queue.find(t => t.id === id);
+const sum = (arr, k) => arr.reduce((s, x) => s + x[k], 0);
+const state = { i: 0, loaded: false, playing: false };
+
+/* ---------- Selection ("Deine Auswahl"), remembered in this browser ---------- */
+const PICK_KEY = "sphaerenklaenge-auswahl";
+const picked = new Set();
+try { (JSON.parse(localStorage.getItem(PICK_KEY) || "[]") || []).forEach(id => { if (byId(id)) picked.add(id); }); } catch (e) {}
+const GOT_KEY = "sphaerenklaenge-geladen";
+const got = new Set();
+try { (JSON.parse(localStorage.getItem(GOT_KEY) || "[]") || []).forEach(id => { if (byId(id)) got.add(id); }); } catch (e) {}
+function saveGot() { try { localStorage.setItem(GOT_KEY, JSON.stringify([...got])); } catch (e) {} }
+const gotTag = t => got.has(t.id) ? '<span class="t-sub got">✓ heruntergeladen</span>' : "";
+function savePick() { try { localStorage.setItem(PICK_KEY, JSON.stringify([...picked])); } catch (e) {} }
+const pickedTracks = () => queue.filter(t => picked.has(t.id));
+function markBtn(t) {
+  const on = picked.has(t.id);
+  return `<button class="mark${on ? " on" : ""}" data-pick="${t.id}" aria-pressed="${on}" aria-label="${esc(t.title)} ${on ? "aus der Auswahl nehmen" : "zur Auswahl hinzufügen"}"><span class="ring">${on ? ICON.check : ICON.plus}</span></button>`;
+}
+function togglePick(id, btn) {
+  const on = !picked.has(id);
+  on ? picked.add(id) : picked.delete(id);
+  savePick();
+  refreshPick();
+  if (on && btn) { const b = document.querySelector(`[data-pick="${id}"]`); if (b) { b.classList.add("pop"); setTimeout(() => b.classList.remove("pop"), 180); } }
+}
+function toggleAlbumPick(a) {
+  const all = a.tracks.every(t => picked.has(t.id));
+  a.tracks.forEach(t => all ? picked.delete(t.id) : picked.add(t.id));
+  savePick();
+  refreshPick();
+  toast(all ? "„" + a.title + "“ aus der Auswahl genommen." : "„" + a.title + "“ ist in deiner Auswahl.");
+}
+function refreshPick() {
+  rerender();
+  renderSelbar();
+  renderPickSheet();
+  renderSheetPick();
+}
+function renderSelbar() {
+  const ts = pickedTracks();
+  $("#selbar").hidden = !ts.length;
+  $("#sel-count").textContent = ts.length;
+  $("#sel-title").textContent = "Deine Auswahl";
+  $("#sel-size").textContent = songs(ts.length) + " · " + mb(sum(ts, "size"));
+  updateDock();
+}
+function renderPickSheet() {
+  const ts = pickedTracks();
+  $("#p-sum").textContent = ts.length ? songs(ts.length) + " · " + fmtLong(sum(ts, "dur")) + " · " + mb(sum(ts, "size")) : "";
+  $("#p-size").textContent = ts.length ? mb(sum(ts, "size")) : "";
+  $("#p-actions").hidden = !ts.length;
+  if (!ts.length) { $("#p-list").innerHTML = `<p class="pick-empty">Noch nichts ausgewählt.<br>Tippe bei einem Lied auf <span class="plus-inline">+</span>, dann erscheint es hier.</p>`; return; }
+  const groups = ALBUMS.map(a => ({ title: a.title, cover: a.cover, tracks: a.tracks.filter(t => picked.has(t.id)) }))
+    .concat([{ title: "Singles", cover: null, tracks: SINGLES.filter(t => picked.has(t.id)) }])
+    .filter(g => g.tracks.length);
+  $("#p-list").innerHTML = groups.map(g => `<div class="pick-group">
+      <div class="pick-head">${g.cover ? `<img src="${g.cover}" alt="">` : ""}<span>${esc(g.title)}</span></div>
+      ${g.tracks.map(t => `<div class="pick-row"><span class="t-title">${esc(t.title)}</span><span class="t-dur">${fmt(t.dur)}</span><button class="round" data-unpick="${t.id}" aria-label="${esc(t.title)} entfernen">${ICON.x}</button></div>`).join("")}
+    </div>`).join("");
+}
+function renderSheetPick() {
+  if (!state.loaded) return;
+  const t = queue[state.i], on = picked.has(t.id);
+  const b = $("#s-pick");
+  b.classList.toggle("on", on);
+  b.innerHTML = (on ? ICON.check + "In deiner Auswahl" : ICON.plus + "Zur Auswahl hinzufügen");
+  b.setAttribute("aria-pressed", on);
+}
+$("#p-clear").addEventListener("click", () => { picked.clear(); savePick(); refreshPick(); toast("Auswahl geleert."); });
+$("#s-pick").addEventListener("click", () => { if (state.loaded) togglePick(queue[state.i].id); });
+
+/* ---------- Overview ---------- */
+$("#stats").textContent = ALBUMS.length + " Alben · " + SINGLES.length + " Singles · " + songs(queue.length) + " · " + fmtLong(sum(queue, "dur"));
+$("#all-size").textContent = mb(sum(queue, "size"));
+$("#take-text").textContent = "Du willst alle " + queue.length + " Lieder? Dann lade die ganze Sammlung direkt herunter, ohne etwas auszuwählen.";
+
+function gotLine(a) {
+  const g = a.tracks.filter(t => got.has(t.id)).length;
+  if (!g) return "";
+  return `<br><span class="got">✓ ${g === a.tracks.length ? "heruntergeladen" : g + " von " + a.tracks.length + " heruntergeladen"}</span>`;
+}
+function albumCard(a) {
+  const now = state.loaded && queue[state.i].album.id === a.id ? `<span class="now">${state.playing ? ICON.eq : ICON.pause}</span>` : "";
+  const k = a.tracks.filter(t => picked.has(t.id)).length;
+  const badge = k ? `<span class="picked">${ICON.check}${k === a.tracks.length ? "Ganz" : k + " von " + a.tracks.length}</span>` : "";
+  return `<button class="card" data-open="${a.id}" aria-label="Album ${esc(a.title)} öffnen">
+      <div class="card-art"><img src="${a.cover}" alt="" loading="lazy">${now}${badge}</div>
+      <div><div class="card-title">${esc(a.title)}</div><div class="card-sub">${songs(a.tracks.length)} · ${fmtLong(sum(a.tracks, "dur"))}${gotLine(a)}</div></div>
+    </button>`;
+}
+function renderHome() {
+  $("#grid").innerHTML = ALBUMS.map(albumCard).join("");
+  const curId = state.loaded ? queue[state.i].id : null;
+  $("#singles").innerHTML = SINGLES.map(t => {
+    const isCur = t.id === curId;
+    return `<li class="row single${isCur ? " current" : ""}${isCur && state.playing ? " playing" : ""}">
+      <button class="row-main" data-track="${t.id}" aria-label="${esc(t.title)} ${isCur && state.playing ? "pausieren" : "abspielen"}">
+        <span class="thumb"><img src="${t.cover}" alt="" loading="lazy">${isCur ? `<span class="ov">${ICON.eq}</span>` : ""}</span>
+        <span class="t-title">${esc(t.title)}<span class="t-sub">Single${got.has(t.id) ? ' · <span class="got">✓ heruntergeladen</span>' : ""}</span></span>
+        <span class="t-dur">${fmt(t.dur)}</span>
+      </button>
+      ${markBtn(t)}
+    </li>`;
+  }).join("");
+}
+
+/* ---------- Album page ---------- */
+let openAlbum = null, homeScroll = 0;
+function showAlbum(id) {
+  const a = ALBUMS.find(x => x.id === id);
+  if (!a) return;
+  if (!openAlbum) homeScroll = window.scrollY;
+  openAlbum = a;
+  $("#home").hidden = true; $("#album").hidden = false;
+  $("#a-cover").src = a.cover; $("#a-cover").alt = "Cover " + a.title;
+  $("#a-title").textContent = a.title; $("#topbar-title").textContent = a.title;
+  $("#a-meta").textContent = songs(a.tracks.length) + " · " + fmtLong(sum(a.tracks, "dur"));
+  renderAlbum();
+  $("#strip").scrollLeft = 0;
+  window.scrollTo(0, 0);
+  onScroll();
+}
+function showHome() {
+  openAlbum = null;
+  $("#album").hidden = true; $("#home").hidden = false;
+  renderHome();
+  window.scrollTo(0, homeScroll);
+}
+function renderAlbum() {
+  const a = openAlbum;
+  const curId = state.loaded ? queue[state.i].id : null;
+  const albumPlaying = state.playing && state.loaded && queue[state.i].album.id === a.id;
+  $("#a-play").innerHTML = albumPlaying ? ICON.pause : ICON.play;
+  $("#a-play").setAttribute("aria-label", albumPlaying ? "Pause" : "Album abspielen");
+  const all = a.tracks.every(t => picked.has(t.id));
+  const ap = $("#a-pick");
+  ap.classList.toggle("on", all);
+  ap.innerHTML = all ? ICON.check + "Ganzes Album ausgewählt" : ICON.plus + "Ganzes Album auswählen";
+  ap.setAttribute("aria-pressed", all);
+  $("#tracks").innerHTML = a.tracks.map((t, n) => {
+    const isCur = t.id === curId;
+    return `<li class="row track${isCur ? " current" : ""}${isCur && state.playing ? " playing" : ""}">
+      <button class="row-main" data-track="${t.id}" aria-label="${esc(t.title)} ${isCur && state.playing ? "pausieren" : "abspielen"}">
+        <span class="t-no">${isCur ? ICON.eq : n + 1}</span>
+        <span class="t-title">${esc(t.title)}${gotTag(t)}</span>
+        <span class="t-dur">${fmt(t.dur)}</span>
+      </button>
+      ${markBtn(t)}
+    </li>`;
+  }).join("");
+  $("#strip").innerHTML = ALBUMS.filter(x => x.id !== a.id).map(albumCard).join("");
+}
+function rerender() { if (openAlbum) renderAlbum(); else renderHome(); }
+function onScroll() { $("#topbar").classList.toggle("scrolled", window.scrollY > 300); }
+window.addEventListener("scroll", onScroll, { passive: true });
+$("#a-play").addEventListener("click", () => {
+  if (state.loaded && queue[state.i].album.id === openAlbum.id) toggle();
+  else play(queue.findIndex(t => t.album.id === openAlbum.id));
+});
+$("#a-pick").addEventListener("click", () => toggleAlbumPick(openAlbum));
+
+/* ---------- Navigation: every step gets its own history entry, so the phone's back button goes one step back.
+   ""        = overview
+   "a-<id>"  = album page
+   "...~p"   = full player on top, "...~s" = selection on top */
+const navStack = [];
+let replacing = false;
+const curHash = () => { try { return decodeURIComponent(location.hash.slice(1)); } catch (e) { return location.hash.slice(1); } };
+function parseHash(h) {
+  const m = h.match(/~(p|s|d)$/);
+  const base = m ? h.slice(0, -2) : h;
+  return { base, overlay: m ? m[1] : null, album: base.startsWith("a-") ? base.slice(2) : null };
+}
+function go(h) { if (curHash() === h) applyRoute(h); else location.hash = h; }
+function replaceTo(h) { if (curHash() === h) { navStack[navStack.length - 1] = h; applyRoute(h); return; } replacing = true; location.replace("#" + h); }
+function stepBack(fallback) { if (navStack.length > 1) history.back(); else replaceTo(fallback); }
+function applyRoute(h) {
+  const r = parseHash(h);
+  const a = r.album && ALBUMS.find(x => x.id === r.album);
+  if (a) { if (!openAlbum || openAlbum.id !== a.id) showAlbum(a.id); }
+  else if (openAlbum) showHome();
+  setSheet($("#sheet"), r.overlay === "p" && state.loaded);
+  setSheet($("#picksheet"), r.overlay === "s");
+  if (r.overlay === "d") renderGuide();
+  setSheet($("#guide"), r.overlay === "d");
+}
+window.addEventListener("hashchange", () => {
+  const h = curHash();
+  if (replacing) { replacing = false; navStack[navStack.length - 1] = h; }
+  else if (navStack.length > 1 && navStack[navStack.length - 2] === h) navStack.pop();
+  else if (navStack[navStack.length - 1] !== h) navStack.push(h);
+  applyRoute(h);
+});
+const openOverlay = k => go(parseHash(curHash()).base + "~" + k);
+const closeOverlay = () => { if (parseHash(curHash()).overlay) stepBack(parseHash(curHash()).base); };
+$("#back").addEventListener("click", () => stepBack(""));
+
+/* ---------- Sheets ---------- */
+function setSheet(el, open) {
+  if (el.classList.contains("open") === open) return;
+  el.classList.toggle("open", open);
+  el.setAttribute("aria-hidden", String(!open));
+  if (open) { el.scrollTop = 0; setTimeout(() => el.querySelector(".sheet-top .round").focus(), 50); }
+  document.body.style.overflow = document.querySelector(".sheet.open") ? "hidden" : "";
+}
+$("#mini-open").addEventListener("click", () => openOverlay("p"));
+$("#sel-open").addEventListener("click", () => openOverlay("s"));
+$("#s-close").addEventListener("click", closeOverlay);
+$("#p-close").addEventListener("click", closeOverlay);
+$("#g-close").addEventListener("click", closeOverlay);
+$("#s-album").addEventListener("click", () => {
+  const id = queue[state.i].album.id;
+  if (id === SINGLE_GROUP.id) { replaceTo(""); setTimeout(() => $("#sec-singles").scrollIntoView({ behavior: "smooth", block: "start" }), 80); }
+  else replaceTo("a-" + id);
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeOverlay(); });
+document.querySelectorAll(".sheet").forEach(sh => {
+  let y = null;
+  sh.addEventListener("touchstart", e => { y = sh.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
+  sh.addEventListener("touchend", e => { if (y !== null && e.changedTouches[0].clientY - y > 110) closeOverlay(); y = null; }, { passive: true });
+});
+
+/* ---------- Dock sizing ---------- */
+function updateDock() {
+  const dock = $("#dock");
+  dock.classList.toggle("idle", $("#selbar").hidden && $("#mini").hidden);
+  requestAnimationFrame(() => document.documentElement.style.setProperty("--dock-h", (dock.classList.contains("idle") ? 0 : dock.offsetHeight) + "px"));
+}
+try { new ResizeObserver(updateDock).observe($("#dock")); } catch (e) {}
+
+/* ---------- Player ---------- */
+const audio = $("#audio");
+function load(i) {
+  state.i = (i + queue.length) % queue.length;
+  const t = queue[state.i];
+  audio.src = t.file;
+  state.loaded = true;
+  $("#mini").hidden = false; updateDock();
+  $("#m-art").src = t.cover; $("#m-title").textContent = t.title; $("#m-album").textContent = t.album.title;
+  $("#s-art").src = t.cover; $("#s-bg").style.backgroundImage = "url('" + t.cover + "')";
+  $("#s-title").textContent = t.title; $("#s-album").textContent = t.album.title;
+  $("#t-dur").textContent = fmt(t.dur);
+  setProgress(0);
+  renderLyrics(t);
+  renderSheetPick();
+  rerender();
+  try {
+    if ("mediaSession" in navigator) navigator.mediaSession.metadata = new MediaMetadata({
+      title: t.title, artist: ARTIST, album: t.album.id === SINGLE_GROUP.id ? t.title : t.album.title,
+      artwork: [{ src: new URL(t.cover, location.href).href, sizes: "900x900", type: "image/jpeg" }],
+    });
+  } catch (e) {}
+}
+function play(i) {
+  if (i !== undefined && (i !== state.i || !state.loaded)) load(i);
+  else if (!state.loaded) load(state.i);
+  audio.play().catch(() => toast("Das Lied konnte nicht starten. Tippe noch einmal darauf.", true));
+}
+function toggle() { audio.paused ? play() : audio.pause(); }
+function syncPlaying() {
+  state.playing = !audio.paused;
+  const ic = state.playing ? ICON.pause : ICON.play, lbl = state.playing ? "Pause" : "Abspielen";
+  for (const b of [$("#m-play"), $("#s-play")]) { b.innerHTML = ic; b.setAttribute("aria-label", lbl); }
+  rerender();
+}
+let dragging = false;
+function setProgress(frac) {
+  $("#mini-bar").style.width = (frac * 100).toFixed(2) + "%";
+  if (!dragging) { $("#seek").value = Math.round(frac * 1000); $("#seek").style.setProperty("--p", (frac * 100).toFixed(2) + "%"); }
+}
+audio.addEventListener("timeupdate", () => {
+  const d = audio.duration || queue[state.i].dur;
+  if (!dragging) $("#t-cur").textContent = fmt(audio.currentTime);
+  setProgress(d ? audio.currentTime / d : 0);
+});
+audio.addEventListener("loadedmetadata", () => { if (isFinite(audio.duration)) $("#t-dur").textContent = fmt(audio.duration); });
+audio.addEventListener("play", syncPlaying);
+audio.addEventListener("pause", syncPlaying);
+/* After a song ends: continue within the same album; a single just stops. */
+audio.addEventListener("ended", () => {
+  const cur = queue[state.i], nxt = queue[state.i + 1];
+  if (nxt && cur.album.id !== SINGLE_GROUP.id && nxt.album.id === cur.album.id) play(state.i + 1);
+  else syncPlaying();
+});
+$("#seek").addEventListener("input", e => {
+  dragging = true;
+  const f = e.target.value / 1000;
+  e.target.style.setProperty("--p", f * 100 + "%");
+  $("#t-cur").textContent = fmt(f * (audio.duration || queue[state.i].dur));
+});
+$("#seek").addEventListener("change", e => {
+  dragging = false;
+  audio.currentTime = (e.target.value / 1000) * (audio.duration || queue[state.i].dur);
+});
+const prev = () => (audio.currentTime > 4 ? (audio.currentTime = 0) : play(state.i - 1));
+const next = () => play(state.i + 1);
+$("#m-play").addEventListener("click", toggle);
+$("#s-play").addEventListener("click", toggle);
+$("#m-next").addEventListener("click", next);
+$("#s-next").addEventListener("click", next);
+$("#s-prev").addEventListener("click", prev);
+try {
+  if ("mediaSession" in navigator) {
+    navigator.mediaSession.setActionHandler("play", () => play());
+    navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+    navigator.mediaSession.setActionHandler("previoustrack", prev);
+    navigator.mediaSession.setActionHandler("nexttrack", next);
+  }
+} catch (e) {}
+
+function renderLyrics(t) {
+  const box = $("#lyrics");
+  if (!t.lyrics) { box.hidden = true; box.innerHTML = ""; return; }
+  let html = "<h3>Songtext</h3>", para = [];
+  const flush = () => { if (para.length) { html += "<p>" + para.map(esc).join("<br>") + "</p>"; para = []; } };
+  t.lyrics.split("\n").forEach(line => {
+    const m = line.match(/^\*\*(.+)\*\*$/);
+    if (m) { flush(); html += `<div class="part">${esc(m[1])}</div>`; }
+    else if (line.trim()) para.push(line.trim());
+    else flush();
+  });
+  flush();
+  box.innerHTML = html; box.hidden = false;
+}
+
+/* ---------- Clicks ---------- */
+document.addEventListener("click", e => {
+  const gd = e.target.closest("[data-guide]");
+  if (gd) { openGuide(gd.dataset.guide); return; }
+  const dv = e.target.closest("[data-device]");
+  if (dv) { guideDevice = dv.dataset.device; renderGuide(); return; }
+  const pk = e.target.closest("[data-pick]");
+  if (pk) { togglePick(pk.dataset.pick, pk); return; }
+  const up = e.target.closest("[data-unpick]");
+  if (up) { picked.delete(up.dataset.unpick); savePick(); refreshPick(); return; }
+  const o = e.target.closest("[data-open]");
+  if (o) { go("a-" + o.dataset.open); return; }
+  const tr = e.target.closest("[data-track]");
+  if (tr) {
+    const i = queue.findIndex(t => t.id === tr.dataset.track);
+    if (i === state.i && state.loaded) toggle(); else play(i);
+    return;
+  }
+  const d = e.target.closest("[data-dl]");
+  if (d && d.dataset.dl) startDownload(d);
+});
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg, err) {
+  const el = $("#toast");
+  el.textContent = msg; el.classList.toggle("err", !!err); el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => (el.hidden = true), err ? 6000 : 3000);
+}
+
+/* ---------- Download guide: explains what happens before anything is saved ---------- */
+const ua = navigator.userAgent || "";
+let guideDevice = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? "ios" : /Android/.test(ua) ? "android" : "desktop";
+let guideMode = "pick", guidePhase = "intro", guideResult = null;
+const DEVICES = { ios: "iPhone", android: "Android", desktop: "Computer" };
+const STEPS_ZIP = {
+  ios: [
+    "Tippe unten auf <b>„Jetzt herunterladen“</b>. Die Lieder werden zusammengepackt, das dauert einen Moment.",
+    "Tippe dann auf <b>„Datei speichern“</b>. Fragt Safari <b>„Laden?“</b>, tippe auf <b>„Laden“</b>. Die Datei landet in der App <b>„Dateien“</b> im Ordner <b>„Downloads“</b>.",
+    "Öffne <b>„Dateien“ › „Downloads“</b> und tippe die ZIP-Datei <b>einmal an</b>. Daraus wird sofort ein ganz normaler Ordner.",
+    "Fertig. Willst du den Ordner woanders haben, halte ihn gedrückt und wähle <b>„Bewegen“</b>. Tippe ein Lied an, und es spielt.",
+  ],
+  android: [
+    "Tippe unten auf <b>„Jetzt herunterladen“</b>. Die Lieder werden zusammengepackt, das dauert einen Moment.",
+    "Tippe dann auf <b>„Datei speichern“</b>. Die Datei landet im Ordner <b>„Downloads“</b>.",
+    "Öffne die App <b>„Dateien“</b> (bei Samsung <b>„Eigene Dateien“</b>), tippe die ZIP-Datei an und wähle <b>„Entpacken“</b>. Dabei kannst du gleich aussuchen, wohin: am besten in den Ordner <b>„Music“</b>.",
+    "Fertig. Jeder Musik-Player zeigt die Lieder jetzt mit Cover an. Die ZIP-Datei kannst du danach löschen.",
+  ],
+  desktop: [
+    "Klicke unten auf <b>„Jetzt herunterladen“</b>. Die Lieder werden zusammengepackt, das dauert einen Moment.",
+    "Klicke dann auf <b>„Datei speichern“</b>. Die Datei landet in deinem <b>Download-Ordner</b>.",
+    "Entpacke sie: unter Windows mit <b>Rechtsklick › „Alle extrahieren“</b>, dort kannst du gleich deinen <b>Musik-Ordner</b> als Ziel wählen. Am Mac reicht ein <b>Doppelklick</b>.",
+    "Fertig. Die ZIP-Datei kannst du danach löschen.",
+  ],
+};
+const STEPS_ONE = {
+  ios: [
+    "Tippe unten auf <b>„Jetzt herunterladen“</b>. Fragt Safari <b>„Laden?“</b>, tippe auf <b>„Laden“</b>.",
+    "Das Lied liegt dann in der App <b>„Dateien“</b> im Ordner <b>„Downloads“</b>. Tippe es an, und es spielt.",
+  ],
+  android: [
+    "Tippe unten auf <b>„Jetzt herunterladen“</b>.",
+    "Das Lied landet im Ordner <b>„Downloads“</b>. Dein Musik-Player findet es dort mit Titel und Cover.",
+  ],
+  desktop: [
+    "Klicke unten auf <b>„Jetzt herunterladen“</b>.",
+    "Das Lied landet in deinem <b>Download-Ordner</b>.",
+  ],
+};
+const IC_ZIP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M11 6h1M11 9h1M11 12h1M10.5 15h2v3h-2z"/></svg>';
+const IC_DIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h6l2 2h10v11H3z"/></svg>';
+const IC_NOTE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>';
+function openGuide(mode) {
+  guideMode = mode; guidePhase = "intro"; guideResult = null; ready = null;
+  $("#toast").hidden = true;
+  const r = parseHash(curHash());
+  if (r.overlay === "s") replaceTo(r.base + "~d"); else go(r.base + "~d");
+}
+const stepList = (arr, start) => `<ol class="g-steps" style="counter-reset: s ${start}">${arr.map(s => `<li><span>${s}</span></li>`).join("")}</ol>`;
+function renderGuide() {
+  const body = $("#g-body");
+  const segs = `<div class="seg" role="tablist" aria-label="Gerät">${Object.entries(DEVICES).map(([k, v]) => `<button role="tab" data-device="${k}" aria-selected="${k === guideDevice}">${v}</button>`).join("")}</div>`;
+  if (guidePhase === "done") {
+    const n = guideResult ? guideResult.count : 0, single = guideResult && guideResult.single;
+    const rest = single ? STEPS_ONE[guideDevice].slice(1) : STEPS_ZIP[guideDevice].slice(2);
+    body.innerHTML = `<div class="g-done"><div class="tick">${ICON.check}</div>
+        <h2 class="gold now-title">${single ? "Lied wird geladen" : "Datei wird gespeichert"}</h2>
+        <p>${songs(n)} ${n === 1 ? "ist" : "sind"} jetzt unterwegs auf dein Gerät. ${guideMode === "pick" ? "Deine Auswahl ist wieder leer. " : ""}Auf der Seite sind sie als „heruntergeladen“ markiert.</p></div>
+      <div class="g-box"><div class="g-label">${single ? "Wo du es findest" : "Jetzt nur noch entpacken"}</div>${segs}${stepList(rest, single ? 1 : 2)}</div>
+      <button class="pill primary g-go" id="g-finish">Fertig</button>`;
+    $("#g-finish").addEventListener("click", closeOverlay);
+    return;
+  }
+  const p = plan(guideMode);
+  const ts = guideMode === "all" ? queue : pickedTracks();
+  if (!p.single && !p.files.length) {
+    body.innerHTML = `<div class="pick-sum"><h2 class="gold">Deine Auswahl ist leer</h2></div><p class="pick-empty">Tippe bei einem Lied auf <span class="plus-inline">+</span>, dann kannst du es hier herunterladen.</p>`;
+    return;
+  }
+  let what;
+  if (p.single) {
+    what = `<div class="g-file">${IC_NOTE}<span>${esc(p.name)}</span></div>
+      <p class="g-note">Eine ganz normale MP3-Datei mit Titel und Cover. Kein Entpacken nötig.</p>`;
+  } else {
+    const folders = [];
+    ALBUMS.forEach(a => { const k = a.tracks.filter(t => ts.some(x => x.id === t.id)).length; if (k) folders.push([a.title, songs(k) + " + Cover"]); });
+    const sk = SINGLES.filter(t => ts.some(x => x.id === t.id)).length;
+    if (sk) folders.push(["Singles", songs(sk)]);
+    what = `<div class="g-file">${IC_ZIP}<span>${esc(p.name)}</span></div>
+      <ul class="g-tree">${folders.map(([f, s]) => `<li>${IC_DIR}<b>${esc(f)}</b><span>${s}</span></li>`).join("")}</ul>
+      <p class="g-note">Eine ZIP-Datei ist ein gepacktes Paket, damit alles in einem Rutsch kommt. Nach dem Entpacken hast du einen normalen Ordner mit allen Liedern als MP3.</p>`;
+  }
+  body.innerHTML = `<div class="pick-sum"><h2 class="gold">So geht’s weiter</h2><div>${songs(ts.length)} · ${mb(sum(ts, "size"))}</div></div>
+    <div class="g-box"><div class="g-label">Das bekommst du</div>${what}</div>
+    <div class="g-box"><div class="g-label">So geht’s auf deinem Gerät</div>${segs}${stepList((p.single ? STEPS_ONE : STEPS_ZIP)[guideDevice], 0)}</div>
+    <button class="pill primary g-go" data-dl="${guideMode}">${ICON.down}<span class="lbl">Jetzt herunterladen</span><span class="sub">${mb(sum(ts, "size"))}</span></button>
+    ${p.single ? "" : `<p class="g-small">Am besten im WLAN. Lass die Seite offen, bis „Datei speichern“ erscheint.</p>`}`;
+  if (ready && ready.mode === guideMode) {
+    const g = body.querySelector(".g-go");
+    g.innerHTML = ICON.check + '<span class="lbl">Datei speichern</span><span class="sub">' + mb(ready.blob.size) + "</span>";
+    ready.btn = g;
+  }
+}
+
+/* ---------- Downloads ----------
+   One song: the MP3 itself. Several songs: one ZIP, a folder per album (with cover) and one for singles.
+   The ZIP is packed first; the viewer then taps "Datei speichern", so the browser always sees a real tap. */
+const cache = new Map();
+const safe = s => s.replace(/[\\/:*?"<>|]/g, "").trim();
+async function fetchBlob(url, onProgress) {
+  if (cache.has(url)) { onProgress(1); return cache.get(url); }
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("fetch " + res.status);
+  const total = +res.headers.get("content-length") || 0;
+  let blob;
+  if (res.body && total) {
+    const reader = res.body.getReader(); const parts = []; let n = 0;
+    for (;;) { const { done, value } = await reader.read(); if (done) break; parts.push(value); n += value.length; onProgress(n / total); }
+    blob = new Blob(parts);
+  } else { blob = await res.blob(); onProgress(1); }
+  if (url.endsWith(".mp3") && cache.size < 6) cache.set(url, blob);
+  return blob;
+}
+function buildFiles(root, keep) {
+  const files = [];
+  ALBUMS.forEach(a => {
+    const ts = a.tracks.map((t, n) => ({ t, n })).filter(x => keep(x.t));
+    if (!ts.length) return;
+    const dir = root + safe(a.title) + "/";
+    files.push({ path: dir + "cover.jpg", url: a.cover, size: 200000 });
+    ts.forEach(({ t, n }) => files.push({ path: dir + String(n + 1).padStart(2, "0") + " " + safe(t.title) + ".mp3", url: "songs/" + t.id + ".mp3", size: t.size }));
+  });
+  SINGLES.filter(keep).forEach(t => files.push({ path: root + "Singles/" + safe(t.title) + ".mp3", url: "songs/" + t.id + ".mp3", size: t.size }));
+  return files;
+}
+function plan(key) {
+  if (key === "all") return { name: COLLECTION + ".zip", files: buildFiles(COLLECTION + "/", () => true) };
+  const ts = pickedTracks();
+  if (ts.length === 1) return { single: true, name: safe(ts[0].title) + ".mp3", url: ts[0].file, ids: [ts[0].id], files: [] };
+  return { name: COLLECTION + " - Meine Auswahl.zip", files: buildFiles(COLLECTION + " - Meine Auswahl/", t => picked.has(t.id)) };
+}
+function saveHref(href, name) {
+  const a = document.createElement("a");
+  a.href = href; a.download = name; a.rel = "noopener";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function markDone(mode, ids, single) {
+  ids.forEach(id => got.add(id)); saveGot();
+  if (mode === "pick") { picked.clear(); savePick(); }
+  refreshPick();
+  guideResult = { count: ids.length, single }; guidePhase = "done";
+  if ($("#guide").classList.contains("open")) { renderGuide(); $("#guide").scrollTop = 0; }
+}
+let busy = false, ready = null;
+async function startDownload(btn) {
+  const mode = btn.dataset.dl;
+  if (ready && ready.btn === btn) {
+    const url = URL.createObjectURL(ready.blob);
+    saveHref(url, ready.name);
+    setTimeout(() => URL.revokeObjectURL(url), 120000);
+    const ids = ready.ids; ready = null;
+    markDone(mode, ids, false);
+    return;
+  }
+  if (busy) { toast("Ein Download wird gerade vorbereitet. Einen Moment bitte."); return; }
+  const p = plan(mode);
+  if (p.single) { saveHref(p.url, p.name); markDone(mode, p.ids, true); return; }
+  if (!p.files.length) { toast("Deine Auswahl ist noch leer."); return; }
+  if (typeof JSZip === "undefined") { toast("Der Download konnte nicht starten. Bitte lade die Seite neu.", true); return; }
+  busy = true;
+  const original = btn.innerHTML;
+  btn.disabled = true;
+  const show = pct => { const l = btn.querySelector(".lbl"); if (l) l.textContent = "Wird zusammengepackt … " + pct + "%"; const s = btn.querySelector(".sub"); if (s) s.hidden = true; };
+  try {
+    const ids = mode === "all" ? queue.map(t => t.id) : [...picked];
+    const total = p.files.reduce((s, f) => s + f.size, 0), prog = p.files.map(() => 0);
+    const update = () => show(Math.min(99, Math.floor(prog.reduce((s, v, i) => s + v * p.files[i].size, 0) / total * 100)));
+    show(0);
+    const zip = new JSZip();
+    for (let k = 0; k < p.files.length; k += 4) {
+      await Promise.all(p.files.slice(k, k + 4).map(async (f, j) => {
+        const blob = await fetchBlob(f.url, v => { prog[k + j] = v; update(); });
+        zip.file(f.path, blob, { binary: true });
+      }));
+    }
+    const out = await zip.generateAsync({ type: "blob", compression: "STORE", mimeType: "application/zip" });
+    ready = { btn, blob: out, name: p.name, ids, mode };
+    btn.innerHTML = ICON.check + '<span class="lbl">Datei speichern</span><span class="sub">' + mb(out.size) + "</span>";
+    btn.disabled = false; busy = false;
+    try { btn.focus(); } catch (e) {}
+  } catch (e) {
+    btn.innerHTML = original; btn.disabled = false; busy = false;
+    toast("Die Lieder konnten nicht geladen werden. Prüfe die Internetverbindung und versuch es noch einmal.", true);
+  }
+}
+$("#s-one").addEventListener("click", () => {
+  if (!state.loaded) return;
+  const t = queue[state.i];
+  saveHref(t.file, safe(t.title) + ".mp3");
+  got.add(t.id); saveGot(); rerender();
+  toast("Wird heruntergeladen: " + t.title);
+});
+
+/* ---------- Share this page ---------- */
+$("#share").addEventListener("click", async () => {
+  const url = location.origin + location.pathname;
+  const data = { title: "SphärenKlänge", text: "Hör mal rein: SphärenKlänge, die Musik von Baldur's Kreativa.", url };
+  try { if (navigator.share) { await navigator.share(data); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { await navigator.clipboard.writeText(url); toast("Link kopiert: " + url); }
+  catch (e) { toast("Link: " + url); }
+});
+
+/* ---------- Start ---------- */
+$("#m-play").innerHTML = ICON.play;
+$("#s-play").innerHTML = ICON.play;
+renderHome();
+renderSelbar();
+renderPickSheet();
+/* An album link (#a-otter) opens that album; a leftover overlay step is dropped. */
+(() => {
+  const h = curHash(), r = parseHash(h);
+  const valid = r.album && ALBUMS.some(x => x.id === r.album) ? r.base : "";
+  navStack.push(valid);
+  if (h !== valid) { try { location.replace("#" + valid); replacing = true; } catch (e) {} }
+  applyRoute(valid);
+})();
+</script>
+</body>
+</html>
