@@ -99,7 +99,17 @@ button:focus-visible, summary:focus-visible, input:focus-visible { outline: 2px 
 .ornament { width: min(280px, 70%); height: 14px; color: var(--gold); opacity: .9; }
 .presents { font-size: .72rem; letter-spacing: .32em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding-left: .32em; }
 h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2.5rem, 12vw, 4.4rem); line-height: 1; margin: 0; letter-spacing: .01em; filter: drop-shadow(0 0 22px rgba(217,169,69,.28)); padding-bottom: .06em; }
-.intro { max-width: 31em; margin: 6px 0 0; color: var(--fg); opacity: .9; font-size: 1.02rem; text-wrap: balance; }
+.welcome { max-width: 32em; margin: 8px 0 0; display: grid; gap: 12px; }
+.welcome p { margin: 0; color: var(--fg); opacity: .88; font-size: 1.03rem; line-height: 1.6; text-wrap: pretty; }
+.welcome .wish { font-family: var(--display); font-size: 1.22rem; line-height: 1.4; opacity: 1; color: var(--gold-hi); margin-top: 6px; text-wrap: balance; }
+.welcome .sign { font-family: var(--display); color: var(--gold); font-size: 1.05rem; opacity: 1; }
+.welcome .sign::before { content: "– "; }
+.howto { list-style: none; margin: 18px 0 4px; padding: 14px 8px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: 100%; max-width: 440px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.howto li { display: grid; justify-items: center; gap: 3px; text-align: center; min-width: 0; }
+.howto .hi { width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid rgba(217,169,69,.6); color: var(--gold); display: grid; place-items: center; margin-bottom: 3px; }
+.howto .hi svg { width: 17px; height: 17px; }
+.howto b { font-weight: 600; font-size: .9rem; }
+.howto span:last-child { color: var(--muted); font-size: .76rem; }
 .stats { color: var(--muted); font-size: .88rem; font-variant-numeric: tabular-nums; }
 
 /* ---------- Sections ---------- */
@@ -306,10 +316,21 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
   <main id="home">
     <div class="stage"><img src="img/logo.jpg" alt="Baldur's Kreativa"></div>
     <header class="hero">
-      <div class="presents">präsentiert</div>
+      <div class="presents">Willkommen bei</div>
       <h1 class="gold">SphärenKlänge</h1>
       <svg class="ornament" viewBox="0 0 280 14" fill="none" aria-hidden="true"><path d="M0 7h118M162 7h118" stroke="currentColor" stroke-width="1"/><path d="M140 1l6 6-6 6-6-6z" fill="currentColor"/><circle cx="124" cy="7" r="1.6" fill="currentColor"/><circle cx="156" cy="7" r="1.6" fill="currentColor"/></svg>
-      <p class="intro">Hier findest du alle Lieder von Baldur. Hör in Ruhe rein und tippe bei jedem Lied, das dir gefällt, auf <span class="plus-inline" aria-label="Plus">+</span>. Zum Schluss lädst du deine Auswahl mit einem Tipp herunter, fertig sortiert in Ordnern.</p>
+      <div class="welcome">
+        <p>Hier erwartet dich eine vielfältige Sammlung unterschiedlicher Musik von Baldur, mit verschiedenen Klängen, Stimmungen und Melodien, die dich auf ganz unterschiedliche Weise begleiten können.</p>
+        <p>Nimm dir einen Moment Zeit, höre dich in Ruhe durch die Sammlung und entdecke die Musik ganz in deinem eigenen Tempo.</p>
+        <p>Wenn dir etwas gefällt, kannst du alle Alben, Singles und Lieder direkt für dich herunterladen.</p>
+        <p class="wish">Viel Freude beim Entdecken, Zuhören und Eintauchen in meine Musikwelt.</p>
+        <p class="sign">Baldur</p>
+      </div>
+      <ol class="howto" aria-label="So funktioniert's">
+        <li><span class="hi"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg></span><b>Reinhören</b><span>Lied antippen</span></li>
+        <li><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 6v12M6 12h12"/></svg></span><b>Merken</b><span>mit dem Plus</span></li>
+        <li><span class="hi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></span><b>Herunterladen</b><span>alles auf einmal</span></li>
+      </ol>
       <div class="stats" id="stats"></div>
     </header>
 
