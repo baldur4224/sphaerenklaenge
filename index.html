@@ -870,6 +870,8 @@ function showExit() {
   if (!parts.length) parts.push("Schön, dass du reingehört hast.");
   $("#exit-text").textContent = parts.join(" ");
   $("#exit-leave").textContent = "Verlassen";
+  $("#exit-title").textContent = "SphärenKlänge verlassen?";
+  $("#exit-stay").hidden = false;
   leaveHint = false;
   $("#exit").hidden = false;
   setTimeout(() => $("#exit-stay").focus(), 30);
@@ -879,16 +881,31 @@ $("#exit-stay").addEventListener("click", stay);
 $("#exit").addEventListener("click", e => { if (e.target.id === "exit") stay(); });
 let leaveHint = false;
 $("#exit-leave").addEventListener("click", () => {
-  if (leaveHint) { $("#exit").hidden = true; leaveHint = false; return; }
+  if (leaveHint) { leaveHint = false; stay(); return; }
   audio.pause();
-  history.back();
-  /* Opened straight from a link there is no page to go back to; the phone's own back button closes it then. */
+  /* A web page may not close its own tab, so leaving means going back to whatever came before
+     SphärenKlänge in this tab. Earlier visits of the page in the same tab (e.g. via the home-screen
+     icon) are skipped in one jump, so "Verlassen" never just lands on SphärenKlänge again. */
+  try { window.close(); } catch (e) {}
+  let steps = 1;
+  try {
+    if (window.navigation && navigation.currentEntry) {
+      const here = location.pathname, list = navigation.entries();
+      let i = navigation.currentEntry.index;
+      while (i > 0 && new URL(list[i - 1].url).pathname === here) i--;
+      steps = navigation.currentEntry.index - i + 1;
+    }
+  } catch (e) {}
+  history.go(-steps);
+  /* Nothing before it (opened from a link or the home-screen icon): the phone's own back button closes it. */
   setTimeout(() => {
     if (document.visibilityState !== "visible" || $("#exit").hidden) return;
-    $("#exit-text").textContent = "Drück jetzt einfach noch einmal die Zurück-Taste deines Handys.";
-    $("#exit-leave").textContent = "Okay";
+    $("#exit-title").textContent = "Bis bald!";
+    $("#exit-text").textContent = "Eine Webseite darf sich nicht selbst schließen. Drück jetzt die Zurück-Taste deines Handys, dann ist SphärenKlänge zu.";
+    $("#exit-stay").hidden = true;
+    $("#exit-leave").textContent = "Doch hierbleiben";
     leaveHint = true;
-  }, 450);
+  }, 500);
 });
 const openOverlay = k => go(parseHash(curHash()).base + "~" + k);
 const closeOverlay = () => { if (parseHash(curHash()).overlay) stepBack(parseHash(curHash()).base); };
