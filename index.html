@@ -1333,11 +1333,19 @@ async function openStats() {
   $("#stats-sub").textContent = "Aufrufe der Seite insgesamt";
   renderStatsSelf();
   $("#stats").hidden = false;
-  try {
-    const r = await fetch(GC_SITE + "/counter/TOTAL.json", { cache: "no-store" });
+  /* Ask for the site total and for this page; show the higher number (the total can lag behind). */
+  const ask = async path => {
+    const r = await fetch(GC_SITE + "/counter/" + path + ".json?rnd=" + Date.now(), { cache: "no-store" });
     if (!r.ok) throw new Error(r.status);
     const j = await r.json();
-    $("#stats-num").textContent = j.count;
+    return parseInt(String(j.count).replace(/[^0-9]/g, ""), 10) || 0;
+  };
+  try {
+    const res = await Promise.allSettled([ask("TOTAL"), ask(encodeURIComponent(location.pathname)), ask(encodeURIComponent(location.pathname.replace(/\/$/, "")))]);
+    const nums = res.filter(x => x.status === "fulfilled").map(x => x.value);
+    if (!nums.length) throw new Error("none");
+    $("#stats-num").textContent = Math.max(...nums).toLocaleString("de-DE");
+    $("#stats-sub").textContent = "Aufrufe der Seite insgesamt (kann ein paar Minuten nachhängen)";
   } catch (e) {
     $("#stats-num").textContent = "–";
     $("#stats-sub").textContent = "Die Zahl ist gerade nicht abrufbar. Die ausführliche Statistik zeigt sie trotzdem.";
