@@ -344,6 +344,9 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .stats-num { font-family: var(--display); font-size: 3rem; line-height: 1; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
 #stats-more { text-decoration: none; }
 .stats-diag { font-size: .82rem; color: var(--muted); margin: 0; }
+.stats-key { display: grid; gap: 10px; text-align: left; border-top: 1px solid var(--line); padding-top: 12px; }
+.stats-key p { margin: 0; font-size: .85rem; color: var(--muted); }
+.stats-key input { width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 0 12px; font: inherit; font-size: .9rem; }
 footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 /* Leave confirmation */
 .exit { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px max(20px, env(safe-area-inset-left, 0px)); background: rgba(6,5,3,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -567,6 +570,13 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <div class="exit-actions">
       <a class="pill primary" id="stats-more" href="https://baldur.goatcounter.com" target="_blank" rel="noopener">Ausführliche Statistik</a>
       <button class="pill" id="stats-self"></button>
+      <button class="linkish" id="stats-setup">Live-Zahl einrichten</button>
+      <div class="stats-key" id="stats-key" hidden>
+        <p>Füge hier deinen GoatCounter-API-Schlüssel ein (nur mit „Statistiken lesen“). Er wird nur auf diesem Gerät gespeichert.</p>
+        <input type="text" id="stats-key-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="API-Schlüssel">
+        <button class="pill primary" id="stats-key-save">Speichern</button>
+        <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
+      </div>
       <button class="linkish" id="stats-close">Schließen</button>
     </div>
   </div>
@@ -1328,12 +1338,38 @@ function renderStatsSelf() {
     ? "Dieses Gerät: Das Zählprogramm wurde nicht geladen (z. B. durch einen Werbeblocker)."
     : skipsSelf() ? "Dieses Gerät: wird bewusst nicht mitgezählt." : "Dieses Gerät: wird mitgezählt ✓";
 }
+/* Live number: GoatCounter's API with a read-only key that is stored only on Baldur's own device
+   (never in the page). Without a key, the public counter is used; that one is cached for up to 4 hours. */
+const KEY_STORE = "sphaerenklaenge-gc-key";
+const getKey = () => { try { return localStorage.getItem(KEY_STORE) || ""; } catch (e) { return ""; } };
+function renderKeyUI() {
+  const k = getKey();
+  $("#stats-setup").textContent = k ? "Live-Zahl: Schlüssel ändern" : "Live-Zahl einrichten";
+  $("#stats-key-del").hidden = !k;
+}
 async function openStats() {
   $("#stats-num").textContent = "…";
   $("#stats-sub").textContent = "Aufrufe der Seite insgesamt";
-  renderStatsSelf();
+  $("#stats-key").hidden = true;
+  renderStatsSelf(); renderKeyUI();
   $("#stats").hidden = false;
-  /* Ask for the site total and for this page; show the higher number (the total can lag behind). */
+  const key = getKey();
+  if (key) {
+    try {
+      const r = await fetch(GC_SITE + "/api/v0/stats/total?start=2026-10-01T00:00:00Z", { headers: { Authorization: "Bearer " + key }, cache: "no-store" });
+      if (r.status === 401 || r.status === 403) throw new Error("key");
+      if (!r.ok) throw new Error(r.status);
+      const j = await r.json();
+      $("#stats-num").textContent = Number(j.total || 0).toLocaleString("de-DE");
+      $("#stats-sub").textContent = "Aufrufe der Seite insgesamt · live";
+      return;
+    } catch (e) {
+      $("#stats-sub").textContent = e.message === "key"
+        ? "Der API-Schlüssel wurde nicht angenommen. Bitte prüfe ihn."
+        : "Die Live-Zahl ist gerade nicht abrufbar.";
+      if (e.message === "key") { $("#stats-num").textContent = "–"; $("#stats-key").hidden = false; return; }
+    }
+  }
   const ask = async path => {
     const r = await fetch(GC_SITE + "/counter/" + path + ".json?rnd=" + Date.now(), { cache: "no-store" });
     if (!r.ok) throw new Error(r.status);
@@ -1345,12 +1381,20 @@ async function openStats() {
     const nums = res.filter(x => x.status === "fulfilled").map(x => x.value);
     if (!nums.length) throw new Error("none");
     $("#stats-num").textContent = Math.max(...nums).toLocaleString("de-DE");
-    $("#stats-sub").textContent = "Aufrufe der Seite insgesamt (kann ein paar Minuten nachhängen)";
+    if (!key) $("#stats-sub").textContent = "Aufrufe insgesamt · Stand bis zu 4 Stunden alt. Für die Live-Zahl unten einrichten.";
   } catch (e) {
     $("#stats-num").textContent = "–";
     $("#stats-sub").textContent = "Die Zahl ist gerade nicht abrufbar. Die ausführliche Statistik zeigt sie trotzdem.";
   }
 }
+$("#stats-setup").addEventListener("click", () => { $("#stats-key").hidden = !$("#stats-key").hidden; $("#stats-key-in").value = ""; if (!$("#stats-key").hidden) $("#stats-key-in").focus(); });
+$("#stats-key-save").addEventListener("click", () => {
+  const v = $("#stats-key-in").value.trim();
+  if (!v) return;
+  try { localStorage.setItem(KEY_STORE, v); } catch (e) {}
+  openStats();
+});
+$("#stats-key-del").addEventListener("click", () => { try { localStorage.removeItem(KEY_STORE); } catch (e) {} openStats(); });
 $("#stats-close").addEventListener("click", () => { $("#stats").hidden = true; });
 $("#stats").addEventListener("click", e => { if (e.target.id === "stats") $("#stats").hidden = true; });
 $("#stats-self").addEventListener("click", () => {
