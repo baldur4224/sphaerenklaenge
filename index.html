@@ -585,7 +585,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 <audio id="audio" preload="metadata"></audio>
 
 <script src="js/jszip.min.js"></script>
-<script data-goatcounter="https://baldur.goatcounter.com/count" async src="js/goatcounter.js"></script>
+<script data-goatcounter="https://baldur.goatcounter.com/count" data-goatcounter-settings='{"no_onload": true}' async src="js/goatcounter.js"></script>
 <script>
 const COLLECTION = "SphärenKlänge";
 const ARTIST = "Baldur";
@@ -1357,6 +1357,19 @@ $("#stats-self").addEventListener("click", () => {
   try { skipsSelf() ? localStorage.removeItem(SKIP_KEY) : localStorage.setItem(SKIP_KEY, "t"); } catch (e) {}
   renderStatsSelf();
 });
+/* Count every opening of the page, not only the first visit of a session. */
+function gcCount() {
+  const gc = window.goatcounter;
+  if (!gc || typeof gc.count !== "function") return false;
+  const send = () => gc.count({ no_session: true });
+  if (!("visibilityState" in document) || document.visibilityState === "visible") send();
+  else document.addEventListener("visibilitychange", function f() {
+    if (document.visibilityState !== "visible") return;
+    document.removeEventListener("visibilitychange", f); send();
+  });
+  return true;
+}
+if (!gcCount()) { const gs = document.querySelector("script[data-goatcounter]"); if (gs) gs.addEventListener("load", gcCount); }
 let titleTaps = [];
 $("#home-title").addEventListener("click", () => {
   const now = Date.now();
