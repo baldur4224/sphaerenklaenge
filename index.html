@@ -1370,6 +1370,16 @@ function gcCount() {
   return true;
 }
 if (!gcCount()) { const gs = document.querySelector("script[data-goatcounter]"); if (gs) gs.addEventListener("load", gcCount); }
+/* Opening the page again from the home-screen icon often just brings the still-open page back to the
+   front, without loading it again. Count that too when the page was away for a while (5 minutes),
+   and when the browser restores the page from its memory. */
+let hiddenSince = 0;
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") { hiddenSince = Date.now(); return; }
+  if (hiddenSince && Date.now() - hiddenSince >= 5 * 60 * 1000) gcCount();
+  hiddenSince = 0;
+});
+window.addEventListener("pageshow", e => { if (e.persisted) gcCount(); });
 let titleTaps = [];
 $("#home-title").addEventListener("click", () => {
   const now = Date.now();
