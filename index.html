@@ -343,6 +343,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 #home-title { -webkit-user-select: none; user-select: none; cursor: default; }
 .stats-num { font-family: var(--display); font-size: 3rem; line-height: 1; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
 #stats-more { text-decoration: none; }
+.stats-diag { font-size: .82rem; color: var(--muted); margin: 0; }
 footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 /* Leave confirmation */
 .exit { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px max(20px, env(safe-area-inset-left, 0px)); background: rgba(6,5,3,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
@@ -562,6 +563,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <h2 class="gold" id="stats-title">Besucherzähler</h2>
     <div class="stats-num" id="stats-num">…</div>
     <p id="stats-sub">Aufrufe der Seite insgesamt</p>
+    <p class="stats-diag" id="stats-diag"></p>
     <div class="exit-actions">
       <a class="pill primary" id="stats-more" href="https://baldur.goatcounter.com" target="_blank" rel="noopener">Ausführliche Statistik</a>
       <button class="pill" id="stats-self"></button>
@@ -583,7 +585,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 <audio id="audio" preload="metadata"></audio>
 
 <script src="js/jszip.min.js"></script>
-<script data-goatcounter="https://baldur.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script data-goatcounter="https://baldur.goatcounter.com/count" async src="js/goatcounter.js"></script>
 <script>
 const COLLECTION = "SphärenKlänge";
 const ARTIST = "Baldur";
@@ -1321,6 +1323,10 @@ const SKIP_KEY = "skipgc";
 const skipsSelf = () => { try { return localStorage.getItem(SKIP_KEY) === "t"; } catch (e) { return false; } };
 function renderStatsSelf() {
   $("#stats-self").textContent = skipsSelf() ? "Meine Besuche werden nicht gezählt ✓" : "Meine eigenen Besuche nicht mitzählen";
+  const gc = window.goatcounter;
+  $("#stats-diag").textContent = !gc || typeof gc.count !== "function"
+    ? "Dieses Gerät: Das Zählprogramm wurde nicht geladen (z. B. durch einen Werbeblocker)."
+    : skipsSelf() ? "Dieses Gerät: wird bewusst nicht mitgezählt." : "Dieses Gerät: wird mitgezählt ✓";
 }
 async function openStats() {
   $("#stats-num").textContent = "…";
