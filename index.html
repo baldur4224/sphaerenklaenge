@@ -339,6 +339,11 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .tipp-steps img { display: block; width: 100%; height: auto; margin-top: 10px; border-radius: 10px; border: 1px solid var(--line); }
 .tipp-note { font-size: .9rem; }
 .tipp-note b { color: var(--fg); }
+/* Hidden visitor counter */
+#home-title { -webkit-user-select: none; user-select: none; cursor: default; }
+.stats-num { font-family: var(--display); font-size: 3rem; line-height: 1; color: var(--gold-hi); font-variant-numeric: tabular-nums; }
+#stats-more { text-decoration: none; }
+footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 /* Leave confirmation */
 .exit { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 24px max(20px, env(safe-area-inset-left, 0px)); background: rgba(6,5,3,.72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .exit-card { width: 100%; max-width: 360px; background: linear-gradient(180deg, var(--surface-2), var(--surface)); border: 1px solid var(--line); border-radius: 18px; padding: 24px 22px; display: grid; gap: 14px; text-align: center; box-shadow: 0 30px 60px -20px rgba(0,0,0,.9); }
@@ -369,7 +374,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
   <main id="home">
     <div class="stage"><img src="img/logo.jpg" alt="Baldur's Kreativa"></div>
     <header class="hero">
-      <h1 class="gold">SphärenKlänge</h1>
+      <h1 class="gold" id="home-title">SphärenKlänge</h1>
       <svg class="ornament" viewBox="0 0 280 14" fill="none" aria-hidden="true"><path d="M0 7h118M162 7h118" stroke="currentColor" stroke-width="1"/><path d="M140 1l6 6-6 6-6-6z" fill="currentColor"/><circle cx="124" cy="7" r="1.6" fill="currentColor"/><circle cx="156" cy="7" r="1.6" fill="currentColor"/></svg>
       <p class="hello" id="hello">Schön, dass du da bist!</p>
       <button class="linkish" id="open-welcome">Begrüßung von Baldur lesen</button>
@@ -410,7 +415,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <button class="pill" data-guide="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg><span class="lbl">Ganze Sammlung laden</span><span class="sub" id="all-size"></span></button>
     </section>
 
-    <footer><button class="pill share" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13M7 8l5-5 5 5M5 14v6h14v-6"/></svg>Seite teilen</button><span class="mark-name">Baldur's Kreativa</span><span>© 2026 · Zum Hören und Behalten, nicht zum Weiterverkaufen.</span></footer>
+    <footer><button class="pill share" id="share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v13M7 8l5-5 5 5M5 14v6h14v-6"/></svg>Seite teilen</button><span class="mark-name">Baldur's Kreativa</span><span>© 2026 · Zum Hören und Behalten, nicht zum Weiterverkaufen.</span><span class="privacy">Besuche werden anonym gezählt, ohne Cookies und ohne persönliche Daten (GoatCounter).</span></footer>
   </main>
 
   <!-- Album -->
@@ -552,6 +557,18 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
     <button class="pill primary intro-go" id="intro-go">Musik entdecken</button>
   </div>
 </section>
+<div class="exit" id="stats" role="dialog" aria-modal="true" aria-labelledby="stats-title" hidden>
+  <div class="exit-card">
+    <h2 class="gold" id="stats-title">Besucherzähler</h2>
+    <div class="stats-num" id="stats-num">…</div>
+    <p id="stats-sub">Aufrufe der Seite insgesamt</p>
+    <div class="exit-actions">
+      <a class="pill primary" id="stats-more" href="https://sphaerenklaenge.goatcounter.com" target="_blank" rel="noopener">Ausführliche Statistik</a>
+      <button class="pill" id="stats-self"></button>
+      <button class="linkish" id="stats-close">Schließen</button>
+    </div>
+  </div>
+</div>
 <div class="exit" id="exit" role="dialog" aria-modal="true" aria-labelledby="exit-title" hidden>
   <div class="exit-card">
     <h2 class="gold" id="exit-title">SphärenKlänge verlassen?</h2>
@@ -566,6 +583,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 <audio id="audio" preload="metadata"></audio>
 
 <script src="js/jszip.min.js"></script>
+<script data-goatcounter="https://sphaerenklaenge.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 <script>
 const COLLECTION = "SphärenKlänge";
 const ARTIST = "Baldur";
@@ -882,7 +900,7 @@ $("#s-album").addEventListener("click", () => {
   if (id === SINGLE_GROUP.id) { replaceTo(""); setTimeout(() => $("#sec-singles").scrollIntoView({ behavior: "smooth", block: "start" }), 80); }
   else replaceTo("a-" + id);
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("#exit").hidden) stay(); else if (!$("#intro").hidden) hideIntro(); else closeOverlay(); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("#stats").hidden) { $("#stats").hidden = true; return; } if (!$("#exit").hidden) stay(); else if (!$("#intro").hidden) hideIntro(); else closeOverlay(); } });
 document.querySelectorAll(".sheet").forEach(sh => {
   let y = null;
   sh.addEventListener("touchstart", e => { y = sh.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
@@ -1294,6 +1312,44 @@ $("#intro-play").addEventListener("click", () => {
 $("#open-welcome").addEventListener("click", showIntro);
 if (seenBefore) $("#hello").textContent = "Willkommen zurück!";
 else showIntro();
+
+/* ---------- Hidden visitor counter ----------
+   Every page load is counted by GoatCounter (no cookies, no personal data).
+   Secret door: tap the title "SphärenKlänge" on the overview 5 times quickly. */
+const GC_SITE = "https://sphaerenklaenge.goatcounter.com";
+const SKIP_KEY = "skipgc";
+const skipsSelf = () => { try { return localStorage.getItem(SKIP_KEY) === "t"; } catch (e) { return false; } };
+function renderStatsSelf() {
+  $("#stats-self").textContent = skipsSelf() ? "Meine Besuche werden nicht gezählt ✓" : "Meine eigenen Besuche nicht mitzählen";
+}
+async function openStats() {
+  $("#stats-num").textContent = "…";
+  $("#stats-sub").textContent = "Aufrufe der Seite insgesamt";
+  renderStatsSelf();
+  $("#stats").hidden = false;
+  try {
+    const r = await fetch(GC_SITE + "/counter/TOTAL.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    $("#stats-num").textContent = j.count;
+  } catch (e) {
+    $("#stats-num").textContent = "–";
+    $("#stats-sub").textContent = "Die Zahl ist gerade nicht abrufbar. Die ausführliche Statistik zeigt sie trotzdem.";
+  }
+}
+$("#stats-close").addEventListener("click", () => { $("#stats").hidden = true; });
+$("#stats").addEventListener("click", e => { if (e.target.id === "stats") $("#stats").hidden = true; });
+$("#stats-self").addEventListener("click", () => {
+  try { skipsSelf() ? localStorage.removeItem(SKIP_KEY) : localStorage.setItem(SKIP_KEY, "t"); } catch (e) {}
+  renderStatsSelf();
+});
+let titleTaps = [];
+$("#home-title").addEventListener("click", () => {
+  const now = Date.now();
+  titleTaps = titleTaps.filter(x => now - x < 2500);
+  titleTaps.push(now);
+  if (titleTaps.length >= 5) { titleTaps = []; openStats(); }
+});
 
 /* ---------- Start ---------- */
 $("#m-play").innerHTML = ICON.play;
