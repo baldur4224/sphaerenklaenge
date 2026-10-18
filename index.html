@@ -451,6 +451,13 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 
 <!-- Dock -->
 <div class="dock idle" id="dock">
+  <div class="dock-row shared" id="resume" hidden>
+    <div class="dock-in">
+      <span class="shared-text"><b>Läuft in einem anderen Fenster</b><span id="resume-title"></span></span>
+      <button class="pill primary" id="resume-play"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>Hier weiterhören</button>
+      <button class="round" id="resume-x" aria-label="Hinweis schließen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+  </div>
   <div class="dock-row shared" id="shared" hidden>
     <div class="dock-in">
       <span class="shared-text"><b>Für dich geteilt</b><span id="shared-title"></span></span>
@@ -567,7 +574,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <div class="stats-num" id="stats-num">…</div>
     <p id="stats-sub">Aufrufe der Seite insgesamt</p>
     <p class="stats-diag" id="stats-diag"></p>
-    <p class="stats-diag" id="site-version">Seitenversion: 17.10.2026 · 18:35</p>
+    <p class="stats-diag" id="site-version">Seitenversion: 18.10.2026 · 19:00</p>
     <div class="exit-actions">
       <a class="pill primary" id="stats-more" href="https://baldur.goatcounter.com" target="_blank" rel="noopener">Ausführliche Statistik</a>
       <button class="pill" id="stats-self"></button>
@@ -940,7 +947,7 @@ document.querySelectorAll(".sheet").forEach(sh => {
 /* ---------- Dock sizing ---------- */
 function updateDock() {
   const dock = $("#dock");
-  dock.classList.toggle("idle", $("#selbar").hidden && $("#mini").hidden && $("#shared").hidden);
+  dock.classList.toggle("idle", $("#selbar").hidden && $("#mini").hidden && $("#shared").hidden && $("#resume").hidden);
   requestAnimationFrame(() => document.documentElement.style.setProperty("--dock-h", (dock.classList.contains("idle") ? 0 : dock.offsetHeight) + "px"));
 }
 try { new ResizeObserver(updateDock).observe($("#dock")); } catch (e) {}
@@ -1342,6 +1349,45 @@ $("#intro-play").addEventListener("click", () => {
 $("#open-welcome").addEventListener("click", showIntro);
 if (seenBefore) $("#hello").textContent = "Willkommen zurück!";
 else showIntro();
+
+/* ---------- Several windows: only one plays, and a new window can take over ----------
+   Opening the page again (e.g. from the home-screen icon) often starts a second Chrome tab while the
+   music keeps playing in the first one. The windows talk to each other: the new one offers to continue
+   the same song at the same moment, and whenever one window starts playing, the others pause. */
+const TAB_ID = Math.random().toString(36).slice(2);
+let bc = null, remote = null;
+try { bc = new BroadcastChannel("sphaerenklaenge"); } catch (e) {}
+function postBC(msg) { try { bc && bc.postMessage(Object.assign({ from: TAB_ID }, msg)); } catch (e) {} }
+function myState() {
+  return { type: "state", track: queue[state.i].id, time: audio.currentTime || 0, at: Date.now(), playing: !audio.paused, shuffle: shuffleOrder ? { order: shuffleOrder, pos: shufPos } : null };
+}
+function hideResume() { if (!$("#resume").hidden) { $("#resume").hidden = true; updateDock(); } }
+if (bc) bc.onmessage = e => {
+  const m = e.data || {};
+  if (m.from === TAB_ID) return;
+  if (m.type === "hello" && state.loaded && !audio.paused) postBC(myState());
+  else if (m.type === "state" && m.playing && !state.playing) {
+    const t = byId(m.track); if (!t) return;
+    remote = m;
+    $("#resume-title").textContent = t.title;
+    $("#resume").hidden = false; $("#shared").hidden = true; updateDock();
+  }
+  else if (m.type === "playing") { if (!audio.paused) audio.pause(); }
+};
+audio.addEventListener("play", () => { postBC({ type: "playing" }); hideResume(); });
+postBC({ type: "hello" });
+$("#resume-play").addEventListener("click", () => {
+  if (!remote) return;
+  const i = queue.findIndex(t => t.id === remote.track);
+  const startAt = remote.time + (remote.playing ? (Date.now() - remote.at) / 1000 : 0);
+  if (remote.shuffle) { shuffleOrder = remote.shuffle.order; shufPos = remote.shuffle.pos; updateShuffleUI(); }
+  load(i);
+  const seekTo = () => { try { audio.currentTime = Math.min(startAt, (audio.duration || queue[i].dur) - 1); } catch (e) {} };
+  if (audio.readyState >= 1) seekTo(); else audio.addEventListener("loadedmetadata", seekTo, { once: true });
+  play();
+  hideResume(); remote = null;
+});
+$("#resume-x").addEventListener("click", () => { hideResume(); remote = null; });
 
 /* ---------- Hidden visitor counter ----------
    Every page load is counted by GoatCounter (no cookies, no personal data).
