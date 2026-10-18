@@ -17,6 +17,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://baldur4224.github.io/sphaerenklaenge/">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="img/icon-180.png">
 <link rel="preload" href="fonts/marcellus.woff2" as="font" type="font/woff2" crossorigin>
@@ -338,6 +339,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .tipp-body > p { margin: 0; color: var(--muted); }
 .tipp-steps img { display: block; width: 100%; height: auto; margin-top: 10px; border-radius: 10px; border: 1px solid var(--line); }
 .tipp-note { font-size: .9rem; }
+#install-btn { justify-self: start; }
 .tipp-note b { color: var(--fg); }
 /* Hidden visitor counter */
 #home-title { -webkit-user-select: none; user-select: none; cursor: default; }
@@ -394,21 +396,25 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <div class="sec-head" id="sec-singles"><h2>Singles</h2><span>Tippe zum Reinhören</span></div>
     <ol class="list" id="singles"></ol>
 
-    <details class="tipp">
+    <details class="tipp" id="tipp">
       <summary>
         <span class="tipp-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
-        <span class="tipp-head"><b>Tipp:</b> SphärenKlänge als Symbol auf deinen Startbildschirm legen</span>
+        <span class="tipp-head"><b>Tipp:</b> SphärenKlänge als App auf deinen Startbildschirm holen</span>
         <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
       </summary>
       <div class="tipp-body">
-        <p>So hast du die Musik immer mit einem Tipp griffbereit, fast wie eine App. Das geht mit dem Browser <b>Chrome</b> auf Android-Handys:</p>
+        <p>Dann öffnet sich SphärenKlänge wie eine richtige App: ohne Browserleiste, und das Symbol bringt dich immer zurück zu deiner laufenden Musik.</p>
+        <button class="pill primary" id="install-btn" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>Jetzt als App installieren</button>
+        <p id="install-or" hidden>Oder Schritt für Schritt mit dem Browser <b>Chrome</b>:</p>
+        <p id="install-steps-intro">So geht's mit dem Browser <b>Chrome</b> auf Android-Handys:</p>
         <ol class="g-steps tipp-steps">
           <li><span>Tippe oben rechts auf die <b>drei Punkte</b>.<img src="img/tipp/schritt1.jpg" alt="Chrome-Leiste, die drei Punkte oben rechts sind markiert" loading="lazy"></span></li>
-          <li><span>Wähle im Menü <b>„Installieren und Verknüpfung erstellen“</b>.<img src="img/tipp/schritt2.jpg" alt="Menüeintrag „Installieren und Verknüpfung erstellen“ ist markiert" loading="lazy"></span></li>
-          <li><span>Tippe auf <b>„Verknüpfung erstellen“</b> und danach auf <b>„Hinzufügen“</b>.<img src="img/tipp/schritt3.jpg" alt="Auswahlfenster, „Verknüpfung erstellen“ ist markiert" loading="lazy"></span></li>
-          <li><span>Fertig. Das goldene Dreizack-Symbol liegt jetzt auf deinem Startbildschirm.</span></li>
+          <li><span>Wähle im Menü <b>„Installieren und Verknüpfung erstellen“</b> (manchmal heißt es <b>„App installieren“</b>).<img src="img/tipp/schritt2.jpg" alt="Menüeintrag „Installieren und Verknüpfung erstellen“ ist markiert" loading="lazy"></span></li>
+          <li><span>Tippe auf <b>„Installieren“</b> und bestätige noch einmal mit <b>„Installieren“</b>.<img src="img/tipp/schritt3.jpg" alt="Auswahlfenster, „Installieren“ ist markiert" loading="lazy"></span></li>
+          <li><span>Fertig. Das goldene Dreizack-Symbol liegt jetzt auf deinem Startbildschirm und öffnet SphärenKlänge als App.</span></li>
         </ol>
         <p class="tipp-note"><b>Seite aus WhatsApp geöffnet?</b> Dann zuerst oben rechts über die drei Punkte <b>„In Chrome öffnen“</b> wählen.</p>
+        <p class="tipp-note"><b>Schon ein altes Symbol da?</b> Das alte Symbol einfach gedrückt halten und entfernen, dann die App wie oben installieren.</p>
         <p class="tipp-note"><b>iPhone:</b> In Safari unten auf das Teilen-Symbol tippen und <b>„Zum Home-Bildschirm“</b> wählen.</p>
       </div>
     </details>
@@ -574,7 +580,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <div class="stats-num" id="stats-num">…</div>
     <p id="stats-sub">Aufrufe der Seite insgesamt</p>
     <p class="stats-diag" id="stats-diag"></p>
-    <p class="stats-diag" id="site-version">Seitenversion: 18.10.2026 · 19:00</p>
+    <p class="stats-diag" id="site-version">Seitenversion: 18.10.2026 · 19:30</p>
     <div class="exit-actions">
       <a class="pill primary" id="stats-more" href="https://baldur.goatcounter.com" target="_blank" rel="noopener">Ausführliche Statistik</a>
       <button class="pill" id="stats-self"></button>
@@ -1388,6 +1394,26 @@ $("#resume-play").addEventListener("click", () => {
   hideResume(); remote = null;
 });
 $("#resume-x").addEventListener("click", () => { hideResume(); remote = null; });
+
+/* ---------- Installable app ----------
+   The page can be installed as an app (manifest + service worker). Chrome's own install banner is
+   held back to keep the page clean; the tip offers a one-tap "install" button instead.
+   Inside the installed app the tip is not needed and is hidden. */
+const isApp = () => { try { return matchMedia("(display-mode: standalone)").matches || navigator.standalone === true; } catch (e) { return false; } };
+if (isApp()) $("#tipp").hidden = true;
+let installEvt = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault(); installEvt = e;
+  $("#install-btn").hidden = false; $("#install-or").hidden = false; $("#install-steps-intro").hidden = true;
+});
+$("#install-btn").addEventListener("click", async () => {
+  if (!installEvt) return;
+  installEvt.prompt();
+  try { const r = await installEvt.userChoice; if (r && r.outcome === "accepted") toast("SphärenKlänge wird als App installiert."); } catch (e) {}
+  installEvt = null; $("#install-btn").hidden = true; $("#install-or").hidden = true; $("#install-steps-intro").hidden = false;
+});
+window.addEventListener("appinstalled", () => { toast("Installiert. Du findest SphärenKlänge jetzt auf deinem Startbildschirm."); });
+if ("serviceWorker" in navigator) { window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); }); }
 
 /* ---------- Hidden visitor counter ----------
    Every page load is counted by GoatCounter (no cookies, no personal data).
