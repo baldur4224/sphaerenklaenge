@@ -486,9 +486,9 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
       <button class="back" id="bs-leave" aria-label="Backstage verlassen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Backstage verlassen</button>
     </div>
     <header class="bs-head">
-      <div class="album-eyebrow">Nur für dich</div>
+      <div class="album-eyebrow">Vorab reinhören</div>
       <h2 class="gold">Backstage</h2>
-      <p>Hier liegen Lieder, die noch nicht veröffentlicht sind. Besucher der Seite sehen sie nicht.</p>
+      <p>Hier liegen Lieder, die noch nicht veröffentlicht sind. Schön, dass du schon reinhören darfst.</p>
     </header>
     <div class="sec-head"><h2>Unveröffentlicht</h2><span id="bs-count"></span></div>
     <ol class="list" id="bs-tracks"></ol>
@@ -509,7 +509,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
         </div>
       </div>
-      <p class="stats-diag" id="site-version">Seitenversion: 23.10.2026 · 21:15</p>
+      <p class="stats-diag" id="site-version">Seitenversion: 23.10.2026 · 21:30</p>
     </section>
     <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
@@ -930,6 +930,7 @@ function replaceTo(h) { if (curHash() === h) { navStack[navStack.length - 1] = h
 function stepBack(fallback) { if (navStack.length > 1) history.back(); else replaceTo(fallback); }
 function applyRoute(h) {
   const r = parseHash(h);
+  if (r.base === "backstage") { replaceTo("sk"); openLogin(); return; }
   if (r.base === "bs") {
     if (!bsKey) { replaceTo("sk"); return; }
     if (!bsOpen) showBackstage();
@@ -1771,6 +1772,7 @@ $("#login-form").addEventListener("submit", async e => {
     queue.push(...items);
     bsKey = key;
     closeLogin();
+    if (!$("#intro").hidden) hideIntro();
     go("bs");
   } catch (err) {
     $("#login-err").textContent = err.message === "pw" ? "Das Passwort stimmt nicht."
@@ -1792,10 +1794,11 @@ renderPickSheet();
 $("#shuffle-n").textContent = songs(queue.length);
 /* An album link (#a-otter) opens that album; a song link (#t-otterhand) opens its album (or the
    overview for a single) with that song ready to play. A leftover overlay step is dropped. */
-var sharedIdx = null;
+var sharedIdx = null, wantBackstage = false;
 (() => {
   const h = curHash(), r = parseHash(h);
   let valid = r.album && ALBUMS.some(x => x.id === r.album) ? r.base : "";
+  wantBackstage = r.base === "backstage" || r.base === "bs";
   if (r.base.startsWith("t-")) {
     const i = queue.findIndex(t => t.id === r.base.slice(2));
     if (i >= 0) { sharedIdx = i; valid = queue[i].album.id === SINGLE_GROUP.id ? "" : "a-" + queue[i].album.id; }
@@ -1816,6 +1819,8 @@ var sharedIdx = null;
     }
   }
 })();
+/* Link "…/#backstage": opens the password window straight away (to pass on with the password). */
+if (wantBackstage) setTimeout(openLogin, 60);
 $("#shared-play").addEventListener("click", () => {
   if (sharedIdx === null) return;
   play(sharedIdx);
