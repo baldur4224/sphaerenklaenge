@@ -371,6 +371,18 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 .exit-card h2 { font-family: var(--display); font-weight: 400; font-size: 1.6rem; margin: 0; line-height: 1.15; }
 .exit-card p { margin: 0; color: var(--muted); }
 .exit-actions { display: grid; gap: 10px; margin-top: 4px; }
+.field { width: 100%; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 0 14px; font: inherit; font-size: 1rem; text-align: center; }
+.field:focus { outline: none; border-color: var(--gold); }
+.login-err { color: #e8a07a !important; font-size: .9rem; }
+.bs-head { display: grid; justify-items: center; text-align: center; gap: 6px; padding-top: 6px; }
+.bs-head h2 { font-family: var(--display); font-weight: 400; font-size: clamp(2.2rem, 9vw, 3rem); line-height: 1.05; margin: 0; }
+.bs-head p { color: var(--muted); margin: 4px 0 0; max-width: 34ch; }
+.bs-empty { color: var(--muted); text-align: center; margin: 18px 0 0; }
+.bs-stats { display: grid; gap: 10px; text-align: center; justify-items: center; }
+.bs-stats p { margin: 0; color: var(--muted); }
+.bs-stats .exit-actions { width: 100%; max-width: 360px; }
+.bs-foot { display: grid; justify-items: center; margin: 40px 0 8px; }
+.row.bs .t-sub.note { color: var(--gold); }
 .toast { position: fixed; z-index: 40; left: 50%; transform: translateX(-50%); bottom: calc(var(--dock-h) + 14px); width: max-content; max-width: calc(100vw - 32px); background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 11px 16px; font-size: .92rem; box-shadow: 0 14px 30px -10px rgba(0,0,0,.8); }
 .toast.err { border-color: var(--danger); }
 
@@ -467,6 +479,39 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
       <h3>Weitere Alben</h3>
       <div class="strip" id="strip"></div>
     </div>
+  </main>
+  <!-- Backstage: only after the password; unreleased songs + visitor counter -->
+  <main id="backstage" hidden>
+    <div class="topbar bs-top">
+      <button class="back" id="bs-leave" aria-label="Backstage verlassen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>Backstage verlassen</button>
+    </div>
+    <header class="bs-head">
+      <div class="album-eyebrow">Nur für dich</div>
+      <h2 class="gold">Backstage</h2>
+      <p>Hier liegen Lieder, die noch nicht veröffentlicht sind. Besucher der Seite sehen sie nicht.</p>
+    </header>
+    <div class="sec-head"><h2>Unveröffentlicht</h2><span id="bs-count"></span></div>
+    <ol class="list" id="bs-tracks"></ol>
+    <p class="bs-empty" id="bs-empty" hidden>Im Moment liegen hier keine Lieder.</p>
+    <div class="sec-head"><h2>Besucherzähler</h2></div>
+    <section class="bs-stats" id="stats" aria-label="Besucherzähler">
+      <div class="stats-num" id="stats-num">…</div>
+      <p id="stats-sub">Aufrufe der Seite insgesamt</p>
+      <p class="stats-diag" id="stats-diag"></p>
+      <div class="exit-actions">
+        <a class="pill primary" id="stats-more" href="https://baldur.goatcounter.com" target="_blank" rel="noopener">Ausführliche Statistik</a>
+        <button class="pill" id="stats-self"></button>
+        <button class="linkish" id="stats-setup">Live-Zahl einrichten</button>
+        <div class="stats-key" id="stats-key" hidden>
+          <p>Füge hier deinen GoatCounter-API-Schlüssel ein (nur mit „Statistiken lesen“). Er wird nur auf diesem Gerät gespeichert.</p>
+          <input type="text" id="stats-key-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="API-Schlüssel">
+          <button class="pill primary" id="stats-key-save">Speichern</button>
+          <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
+        </div>
+      </div>
+      <p class="stats-diag" id="site-version">Seitenversion: 23.10.2026 · 21:15</p>
+    </section>
+    <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
 </div>
 
@@ -589,26 +634,17 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <button class="pill primary intro-go" id="intro-go">Musik entdecken</button>
   </div>
 </section>
-<div class="exit" id="stats" role="dialog" aria-modal="true" aria-labelledby="stats-title" hidden>
-  <div class="exit-card">
-    <h2 class="gold" id="stats-title">Besucherzähler</h2>
-    <div class="stats-num" id="stats-num">…</div>
-    <p id="stats-sub">Aufrufe der Seite insgesamt</p>
-    <p class="stats-diag" id="stats-diag"></p>
-    <p class="stats-diag" id="site-version">Seitenversion: 23.10.2026 · 12:45</p>
+<div class="exit" id="login" role="dialog" aria-modal="true" aria-labelledby="login-title" hidden>
+  <form class="exit-card" id="login-form" autocomplete="off">
+    <h2 class="gold" id="login-title">Backstage</h2>
+    <p>Dieser Bereich ist geschützt. Bitte gib das Passwort ein.</p>
+    <input class="field" type="password" id="login-pw" autocomplete="current-password" autocapitalize="off" spellcheck="false" placeholder="Passwort" aria-label="Passwort">
+    <p class="login-err" id="login-err" role="alert" hidden></p>
     <div class="exit-actions">
-      <a class="pill primary" id="stats-more" href="https://baldur.goatcounter.com" target="_blank" rel="noopener">Ausführliche Statistik</a>
-      <button class="pill" id="stats-self"></button>
-      <button class="linkish" id="stats-setup">Live-Zahl einrichten</button>
-      <div class="stats-key" id="stats-key" hidden>
-        <p>Füge hier deinen GoatCounter-API-Schlüssel ein (nur mit „Statistiken lesen“). Er wird nur auf diesem Gerät gespeichert.</p>
-        <input type="text" id="stats-key-in" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="API-Schlüssel">
-        <button class="pill primary" id="stats-key-save">Speichern</button>
-        <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
-      </div>
-      <button class="linkish" id="stats-close">Schließen</button>
+      <button class="pill primary" id="login-go" type="submit">Anmelden</button>
+      <button class="linkish" id="login-cancel" type="button">Abbrechen</button>
     </div>
-  </div>
+  </form>
 </div>
 <div class="exit" id="exit" role="dialog" aria-modal="true" aria-labelledby="exit-title" hidden>
   <div class="exit-card">
@@ -632,6 +668,8 @@ const CATALOG = {"albums": [{"id": "ein-atemzug", "title": "Ein Atemzug", "cover
 const ALBUMS = CATALOG.albums;
 const SINGLES = CATALOG.singles;
 const SINGLE_GROUP = { id: "singles", title: "Single" };
+const BS_GROUP = { id: "backstage", title: "Backstage" };
+let bsKey = null, bsOpen = false, bsScroll = 0;
 
 const ICON = {
   play: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>',
@@ -665,6 +703,7 @@ function saveGot() { try { localStorage.setItem(GOT_KEY, JSON.stringify([...got]
 const gotTag = t => got.has(t.id) ? '<span class="t-sub got">✓ heruntergeladen</span>' : "";
 function savePick() { try { localStorage.setItem(PICK_KEY, JSON.stringify([...picked])); } catch (e) {} }
 const pickedTracks = () => queue.filter(t => picked.has(t.id));
+const pubIdx = () => queue.map((t, i) => t.bs ? -1 : i).filter(i => i >= 0);
 function markBtn(t) {
   const on = picked.has(t.id);
   return `<button class="mark${on ? " on" : ""}" data-pick="${t.id}" aria-pressed="${on}" aria-label="${esc(t.title)} ${on ? "aus der Auswahl nehmen" : "zur Auswahl hinzufügen"}"><span class="ring">${on ? ICON.check : ICON.plus}</span></button>`;
@@ -864,7 +903,7 @@ function renderAlbum() {
   }).join("") + soonOf(a).map((s, k) => soonRow(s, `<span class="t-no">${a.tracks.length + k + 1}</span>`, "track")).join("");
   $("#strip").innerHTML = ALBUMS.filter(x => x.id !== a.id).map(albumCard).join("");
 }
-function rerender() { if (openAlbum) renderAlbum(); else renderHome(); }
+function rerender() { if (bsOpen) renderBackstage(); else if (openAlbum) renderAlbum(); else renderHome(); }
 function onScroll() { $("#topbar").classList.toggle("scrolled", window.scrollY > 300); }
 window.addEventListener("scroll", onScroll, { passive: true });
 $("#a-play").addEventListener("click", () => {
@@ -891,6 +930,10 @@ function replaceTo(h) { if (curHash() === h) { navStack[navStack.length - 1] = h
 function stepBack(fallback) { if (navStack.length > 1) history.back(); else replaceTo(fallback); }
 function applyRoute(h) {
   const r = parseHash(h);
+  if (r.base === "bs") {
+    if (!bsKey) { replaceTo("sk"); return; }
+    if (!bsOpen) showBackstage();
+  } else if (bsOpen) leaveBackstage();
   const a = r.album && ALBUMS.find(x => x.id === r.album);
   if (a) { if (!openAlbum || openAlbum.id !== a.id) showAlbum(a.id); }
   else if (openAlbum) showHome();
@@ -1001,10 +1044,11 @@ $("#p-close").addEventListener("click", closeOverlay);
 $("#g-close").addEventListener("click", closeOverlay);
 $("#s-album").addEventListener("click", () => {
   const id = queue[state.i].album.id;
+  if (id === BS_GROUP.id) { replaceTo("bs"); return; }
   if (id === SINGLE_GROUP.id) { replaceTo(""); setTimeout(() => $("#sec-singles").scrollIntoView({ behavior: "smooth", block: "start" }), 80); }
   else replaceTo("a-" + id);
 });
-document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("#stats").hidden) { $("#stats").hidden = true; return; } if (!$("#exit").hidden) stay(); else if (!$("#intro").hidden) hideIntro(); else closeOverlay(); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape") { if (!$("#login").hidden) { closeLogin(); return; } if (!$("#exit").hidden) stay(); else if (!$("#intro").hidden) hideIntro(); else closeOverlay(); } });
 document.querySelectorAll(".sheet").forEach(sh => {
   let y = null;
   sh.addEventListener("touchstart", e => { y = sh.scrollTop <= 0 ? e.touches[0].clientY : null; }, { passive: true });
@@ -1025,7 +1069,7 @@ const audio = $("#audio");
 let shuffleOrder = null, shufPos = 0;
 function shuffled(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function startShuffle(fromCurrent) {
-  let order = shuffled(queue.map((_, i) => i));
+  let order = shuffled(pubIdx());
   if (fromCurrent && state.loaded) order = [state.i].concat(order.filter(i => i !== state.i));
   shuffleOrder = order; shufPos = 0; updateShuffleUI();
 }
@@ -1040,8 +1084,10 @@ function updateShuffleUI() {
 function load(i) {
   state.i = (i + queue.length) % queue.length;
   const t = queue[state.i];
-  audio.src = t.file;
+  if (t.bs && !t.file) { audio.removeAttribute("src"); try { audio.load(); } catch (e) {} }
+  else audio.src = t.file;
   state.loaded = true;
+  for (const id of ["#s-share", "#s-pick", "#s-one"]) $(id).hidden = !!t.bs;
   $("#mini").hidden = false; updateDock();
   $("#m-art").src = t.cover; $("#m-title").textContent = t.title; $("#m-album").textContent = (shuffleOrder ? "Zufall · " : "") + t.album.title;
   $("#s-art").src = t.cover; $("#s-bg").style.backgroundImage = "url('" + t.cover + "')";
@@ -1061,6 +1107,8 @@ function load(i) {
 function play(i) {
   if (i !== undefined && (i !== state.i || !state.loaded)) load(i);
   else if (!state.loaded) load(state.i);
+  const t = queue[state.i];
+  if (t.bs && !t.file) { bsFetch(t, true); return; }
   audio.play().catch(e => { if (e && e.name === "AbortError") return; toast("Das Lied konnte nicht starten. Tippe noch einmal darauf.", true); });
 }
 function toggle() { audio.paused ? play() : audio.pause(); }
@@ -1101,22 +1149,28 @@ $("#seek").addEventListener("change", e => {
   dragging = false;
   audio.currentTime = (e.target.value / 1000) * (audio.duration || queue[state.i].dur);
 });
+/* Next/previous stay among the published songs, or among the backstage songs. */
+function stepIdx(d) {
+  const cur = queue[state.i], idx = queue.map((t, i) => !!t.bs === !!cur.bs ? i : -1).filter(i => i >= 0);
+  const k = idx.indexOf(state.i);
+  return idx[(k + d + idx.length) % idx.length];
+}
 function prev() {
   if (audio.currentTime > 4) { audio.currentTime = 0; return; }
   if (shuffleOrder) { shufPos = Math.max(0, shufPos - 1); play(shuffleOrder[shufPos]); }
-  else play(state.i - 1);
+  else play(stepIdx(-1));
 }
 function next() {
   if (shuffleOrder) {
     shufPos++;
     if (shufPos >= shuffleOrder.length) startShuffle(false);
     play(shuffleOrder[shufPos]);
-  } else play(state.i + 1);
+  } else play(stepIdx(1));
 }
 $("#shuffle-btn").addEventListener("click", () => {
   startShuffle(false);
   play(shuffleOrder[0]);
-  toast("Zufallswiedergabe: alle " + queue.length + " Lieder, bunt gemischt.");
+  toast("Zufallswiedergabe: alle " + pubIdx().length + " Lieder, bunt gemischt.");
 });
 $("#s-shuffle").addEventListener("click", () => {
   if (shuffleOrder) { stopShuffle(); toast("Zufallswiedergabe aus."); }
@@ -1361,7 +1415,7 @@ async function startDownload(btn) {
   btn.disabled = true;
   const show = pct => { const l = btn.querySelector(".lbl"); if (l) l.textContent = "Wird zusammengepackt … " + pct + "%"; const s = btn.querySelector(".sub"); if (s) s.hidden = true; };
   try {
-    const ids = mode === "all" ? queue.map(t => t.id) : [...picked];
+    const ids = mode === "all" ? queue.filter(t => !t.bs).map(t => t.id) : [...picked];
     const total = p.files.reduce((s, f) => s + f.size, 0), prog = p.files.map(() => 0);
     const update = () => show(Math.min(99, Math.floor(prog.reduce((s, v, i) => s + v * p.files[i].size, 0) / total * 100)));
     show(0);
@@ -1509,7 +1563,6 @@ async function openStats() {
   $("#stats-sub").textContent = "Aufrufe der Seite insgesamt";
   $("#stats-key").hidden = true;
   renderStatsSelf(); renderKeyUI();
-  $("#stats").hidden = false;
   const key = getKey();
   if (key) {
     try {
@@ -1552,8 +1605,6 @@ $("#stats-key-save").addEventListener("click", () => {
   openStats();
 });
 $("#stats-key-del").addEventListener("click", () => { try { localStorage.removeItem(KEY_STORE); } catch (e) {} openStats(); });
-$("#stats-close").addEventListener("click", () => { $("#stats").hidden = true; });
-$("#stats").addEventListener("click", e => { if (e.target.id === "stats") $("#stats").hidden = true; });
 $("#stats-self").addEventListener("click", () => {
   try { skipsSelf() ? localStorage.removeItem(SKIP_KEY) : localStorage.setItem(SKIP_KEY, "t"); } catch (e) {}
   renderStatsSelf();
@@ -1586,8 +1637,151 @@ $("#home-title").addEventListener("click", () => {
   const now = Date.now();
   titleTaps = titleTaps.filter(x => now - x < 2500);
   titleTaps.push(now);
-  if (titleTaps.length >= 5) { titleTaps = []; openStats(); }
+  if (titleTaps.length >= 5) { titleTaps = []; bsKey ? go("bs") : openLogin(); }
 });
+
+/* ---------- Backstage ----------
+   Secret door: tap "SphärenKlänge" 5 times, then enter the password. The repository is public, so the
+   backstage songs, covers and titles are stored encrypted (AES-256-GCM); only the password unlocks
+   them, right here in the browser. Leaving the backstage locks it again and the normal page returns.
+   backstage/schluessel.json: content key, wrapped with a key derived from the password (PBKDF2).
+   backstage/liste.bin: the encrypted song list. Songs/covers: backstage/<random>.bin. */
+const ub64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function bsDecrypt(url, key, fresh) {
+  const r = await fetch(url, fresh ? { cache: "no-store" } : {});
+  if (!r.ok) throw new Error("net");
+  const b = new Uint8Array(await r.arrayBuffer());
+  return crypto.subtle.decrypt({ name: "AES-GCM", iv: b.slice(0, 12) }, key, b.slice(12));
+}
+async function bsUnlock(pw) {
+  if (!window.crypto || !crypto.subtle) throw new Error("crypto");
+  const r = await fetch("backstage/schluessel.json", { cache: "no-store" });
+  if (!r.ok) throw new Error("net");
+  const k = await r.json();
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const kek = await crypto.subtle.deriveKey({ name: "PBKDF2", salt: ub64(k.salt), iterations: k.iter, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  let raw;
+  try { raw = await crypto.subtle.decrypt({ name: "AES-GCM", iv: ub64(k.iv) }, kek, ub64(k.key)); }
+  catch (e) { throw new Error("pw"); }
+  const key = await crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["decrypt"]);
+  const list = JSON.parse(new TextDecoder().decode(await bsDecrypt("backstage/liste.bin", key, true)));
+  const items = await Promise.all(list.map(async t => {
+    let cover = "img/logo.jpg";
+    try { cover = URL.createObjectURL(new Blob([await bsDecrypt(t.cover, key)], { type: "image/jpeg" })); } catch (e) {}
+    return { ...t, bs: true, album: BS_GROUP, cover, encFile: t.file, file: null };
+  }));
+  return { key, items };
+}
+/* Songs are fetched and unlocked only when they are played (each is several MB). */
+function bsFetch(t, autoplay) {
+  if (t.file || t.loading) return;
+  t.loading = true;
+  if (autoplay) toast("„" + t.title + "“ wird geladen …");
+  rerender();
+  const key = bsKey;
+  bsDecrypt(t.encFile, key).then(buf => {
+    t.loading = false;
+    if (bsKey !== key || !queue.includes(t)) return;
+    t.file = URL.createObjectURL(new Blob([buf], { type: "audio/mpeg" }));
+    if (state.loaded && queue[state.i] === t) {
+      audio.src = t.file;
+      if (autoplay) audio.play().catch(e => { if (e && e.name !== "AbortError") toast("Bereit. Tippe auf Abspielen."); });
+    }
+    rerender();
+  }).catch(() => {
+    t.loading = false;
+    if (autoplay) toast("Das Lied konnte nicht geladen werden. Prüfe die Internetverbindung.", true);
+    rerender();
+  });
+}
+/* While a backstage song plays, the next one is already fetched in the background. */
+audio.addEventListener("playing", () => {
+  if (!state.loaded || !queue[state.i].bs) return;
+  const n = queue[stepIdx(1)];
+  if (n && n.bs) bsFetch(n, false);
+});
+function renderBackstage() {
+  const items = queue.filter(t => t.bs), curId = state.loaded ? queue[state.i].id : null;
+  $("#bs-count").textContent = items.length ? songs(items.length) : "";
+  $("#bs-empty").hidden = items.length > 0;
+  $("#bs-tracks").innerHTML = items.map(t => {
+    const isCur = t.id === curId;
+    const sub = (t.note ? esc(t.note) : "Unveröffentlicht") + (t.loading ? " · wird geladen …" : "");
+    return `<li class="row single bs${isCur ? " current" : ""}${isCur && state.playing ? " playing" : ""}">
+      <button class="row-main" data-track="${t.id}" aria-label="${esc(t.title)} ${isCur && state.playing ? "pausieren" : "abspielen"}">
+        <span class="thumb"><img src="${t.cover}" alt="">${isCur ? `<span class="ov">${ICON.eq}</span>` : ""}</span>
+        <span class="t-title">${esc(t.title)}<span class="t-sub${t.note ? " note" : ""}">${sub}</span></span>
+        <span class="t-dur">${fmt(t.dur)}</span>
+      </button>
+      <span></span>
+    </li>`;
+  }).join("");
+}
+function showBackstage() {
+  if (!openAlbum) bsScroll = window.scrollY;
+  openAlbum = null;
+  bsOpen = true;
+  $("#home").hidden = true; $("#album").hidden = true; $("#backstage").hidden = false;
+  renderBackstage();
+  window.scrollTo(0, 0);
+  openStats();
+}
+/* Leaving locks the backstage again: its songs leave the player and the normal page is back. */
+function leaveBackstage() {
+  bsOpen = false;
+  const cur = state.loaded ? queue[state.i] : null;
+  if (cur && cur.bs) {
+    audio.pause(); audio.removeAttribute("src"); try { audio.load(); } catch (e) {}
+    state.loaded = false; state.playing = false;
+    $("#mini").hidden = true;
+    try { if ("mediaSession" in navigator) navigator.mediaSession.metadata = null; } catch (e) {}
+  }
+  const keepId = state.loaded ? queue[state.i].id : null;
+  stopShuffle();
+  for (let k = queue.length - 1; k >= 0; k--) {
+    const t = queue[k];
+    if (!t.bs) continue;
+    if (t.file) URL.revokeObjectURL(t.file);
+    if (t.cover.startsWith("blob:")) URL.revokeObjectURL(t.cover);
+    queue.splice(k, 1);
+  }
+  state.i = keepId ? queue.findIndex(t => t.id === keepId) : 0;
+  for (const id of ["#s-share", "#s-pick", "#s-one"]) $(id).hidden = false;
+  bsKey = null;
+  $("#backstage").hidden = true; $("#home").hidden = false;
+  renderHome(); updateDock();
+  window.scrollTo(0, bsScroll);
+}
+function openLogin() {
+  $("#login-err").hidden = true; $("#login-pw").value = "";
+  $("#login").hidden = false;
+  setTimeout(() => $("#login-pw").focus(), 50);
+}
+function closeLogin() { $("#login").hidden = true; $("#login-pw").value = ""; }
+$("#login-cancel").addEventListener("click", closeLogin);
+$("#login").addEventListener("click", e => { if (e.target.id === "login") closeLogin(); });
+$("#login-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const pw = $("#login-pw").value;
+  if (!pw) { $("#login-pw").focus(); return; }
+  const btn = $("#login-go");
+  btn.disabled = true; btn.textContent = "Wird geprüft …"; $("#login-err").hidden = true;
+  try {
+    const { key, items } = await bsUnlock(pw);
+    queue.push(...items);
+    bsKey = key;
+    closeLogin();
+    go("bs");
+  } catch (err) {
+    $("#login-err").textContent = err.message === "pw" ? "Das Passwort stimmt nicht."
+      : err.message === "crypto" ? "Dieser Browser kann den Backstage nicht öffnen."
+      : "Der Backstage konnte gerade nicht geladen werden. Prüfe die Internetverbindung.";
+    $("#login-err").hidden = false;
+    $("#login-pw").select();
+  } finally { btn.disabled = false; btn.textContent = "Anmelden"; }
+});
+$("#bs-leave").addEventListener("click", () => stepBack("sk"));
+$("#bs-leave2").addEventListener("click", () => stepBack("sk"));
 
 /* ---------- Start ---------- */
 $("#m-play").innerHTML = ICON.play;
