@@ -15,6 +15,7 @@ Usage (password from the environment variable BACKSTAGE_PW):
   backstage.py add MP3 TITLE COVER [--lyrics FILE] [--note TEXT] [--id ID] [--album ALBUM_ID]
   backstage.py album-add ALBUM_ID TITLE COVER     new album (its songs are added with --album)
   backstage.py album-remove ALBUM_ID              album and all its songs
+  backstage.py track-set ID [--album ALBUM_ID] [--note TEXT] [--title TEXT]   ("" clears album/note)
   backstage.py album-text ALBUM_ID TEXT           short text by Baldur above the songs ("" removes it)
   backstage.py remove ID
   backstage.py export ID OUT.mp3 [OUT_COVER.jpg]   decrypt a song again (to publish it)
@@ -100,6 +101,21 @@ def main():
         data["albums"].append({"id": a[1], "title": a[2], "cover": "backstage/" + fc})
         save_list(key, data)
         print("Album angelegt:", a[1], a[2])
+    elif cmd == "track-set":
+        opts = dict(zip(a[2::2], a[3::2]))
+        for t in items:
+            if t["id"] != a[1]:
+                continue
+            for k in ("album", "note", "title"):
+                if "--" + k in opts:
+                    if opts["--" + k]:
+                        t[k] = opts["--" + k]
+                    else:
+                        t.pop(k, None)
+            if t.get("album"):
+                assert any(x["id"] == t["album"] for x in data["albums"]), "Album fehlt"
+        save_list(key, data)
+        print("Geändert.")
     elif cmd == "album-text":
         for al in data["albums"]:
             if al["id"] == a[1]:
