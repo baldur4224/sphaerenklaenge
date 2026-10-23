@@ -381,6 +381,15 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
 .bs-albums { display: grid; gap: 14px; margin-bottom: 14px; }
 .bs-albums:empty { display: none; }
 .bs-albums .nw-open { cursor: default; }
+.bs-quote { margin: 14px 4px 2px; padding: 14px 12px 12px; border-top: 1px solid rgba(217,169,69,.28); text-align: center; }
+.bs-quote blockquote { margin: 0; }
+.bs-quote p { margin: 0; font-family: var(--display); font-size: 1.05rem; line-height: 1.45; color: var(--fg); }
+.bs-quote p:first-child { color: var(--gold-hi); font-size: 1.12rem; margin-bottom: 6px; }
+.bs-quote figcaption { margin-top: 8px; color: var(--gold); font-size: .78rem; letter-spacing: .16em; text-transform: uppercase; }
+.bs-quote figcaption::before { content: "— "; }
+.bs-quote + .nw-list { margin-top: 4px; }
+.bs-quote + .nw-list .row:first-child { border-top-color: rgba(217,169,69,.18); }
+.bs-quote { border-top: 1px solid rgba(217,169,69,.28); border-bottom: 0; }
 .bs-stats { display: grid; gap: 10px; text-align: center; justify-items: center; }
 .bs-stats p { margin: 0; color: var(--muted); }
 .bs-stats .exit-actions { width: 100%; max-width: 360px; }
@@ -513,7 +522,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
         </div>
       </div>
-      <p class="stats-diag" id="site-version">Seitenversion: 23.10.2026 · 23:59</p>
+      <p class="stats-diag" id="site-version">Seitenversion: 24.10.2026 · 00:05</p>
     </section>
     <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
@@ -1672,7 +1681,7 @@ async function bsUnlock(pw) {
   const data = JSON.parse(new TextDecoder().decode(await bsDecrypt("backstage/liste.bin", key, true)));
   const list = Array.isArray(data) ? { albums: [], tracks: data } : data;
   const img = async f => { try { return URL.createObjectURL(new Blob([await bsDecrypt(f, key)], { type: "image/jpeg" })); } catch (e) { return "img/logo.jpg"; } };
-  const albums = await Promise.all((list.albums || []).map(async al => ({ id: "bsa-" + al.id, title: al.title, cover: await img(al.cover), bs: true })));
+  const albums = await Promise.all((list.albums || []).map(async al => ({ id: "bsa-" + al.id, title: al.title, text: al.text || "", cover: await img(al.cover), bs: true })));
   const tracks = await Promise.all(list.tracks.map(async t => {
     const album = albums.find(x => x.id === "bsa-" + t.album) || BS_GROUP;
     return { ...t, bs: true, album, cover: await img(t.cover), encFile: t.file, file: null };
@@ -1736,6 +1745,7 @@ function renderBackstage() {
         </div>
         <button class="nw-play" data-playalbum="${al.id}" aria-label="${on ? "Pause" : "Album " + esc(al.title) + " abspielen"}">${on ? ICON.pause : ICON.play}</button>
       </div>
+      ${al.text ? `<figure class="bs-quote"><blockquote>${al.text.split("\n").map(l => `<p>${esc(l)}</p>`).join("")}</blockquote><figcaption>Baldur</figcaption></figure>` : ""}
       <ol class="nw-list">${ts.map(t => bsRow(t, curId)).join("")}</ol>
     </div>`;
   }).join("");
