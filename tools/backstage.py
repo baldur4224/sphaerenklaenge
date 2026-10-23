@@ -3,7 +3,8 @@
 
 Only someone with the password can read the list, the covers or the songs.
   backstage/schluessel.json  password -> content key (PBKDF2-SHA256 + AES-GCM key wrap)
-  backstage/liste.bin        encrypted list of songs (JSON)
+  backstage/liste.bin        encrypted list (JSON): {"albums": [{id, title, cover}], "tracks": [...]}
+                             a track with "album": <album id> belongs to that album
   backstage/<random>.bin     encrypted MP3s and covers
 Every .bin file is: 12-byte nonce + AES-256-GCM ciphertext (with tag).
 
@@ -11,7 +12,9 @@ Usage (password from the environment variable BACKSTAGE_PW):
   backstage.py init                       new, empty backstage with this password
   backstage.py passwd NEW_PASSWORD        change the password (songs stay as they are)
   backstage.py list
-  backstage.py add MP3 TITLE COVER [--lyrics FILE] [--note TEXT] [--id ID]
+  backstage.py add MP3 TITLE COVER [--lyrics FILE] [--note TEXT] [--id ID] [--album ALBUM_ID]
+  backstage.py album-add ALBUM_ID TITLE COVER     new album (its songs are added with --album)
+  backstage.py album-remove ALBUM_ID              album and all its songs
   backstage.py remove ID
   backstage.py export ID OUT.mp3 [OUT_COVER.jpg]   decrypt a song again (to publish it)
 """
@@ -48,11 +51,19 @@ def dec(key, blob):
 
 
 def load_list(key):
-    return json.loads(dec(key, open(LIST, "rb").read())) if os.path.exists(LIST) else []
+    d = json.loads(dec(key, open(LIST, "rb").read())) if os.path.exists(LIST) else []
+    return d if isinstance(d, dict) else {"albums": [], "tracks": d}
 
 
-def save_list(key, items):
-    open(LIST, "wb").write(enc(key, json.dumps(items, ensure_ascii=False).encode()))
+def save_list(key, data):
+    open(LIST, "wb").write(enc(key, json.dumps(data, ensure_ascii=False).encode()))
+
+
+def drop_files(*paths):
+    for f in paths:
+        p = os.path.join(ROOT, os.path.basename(f))
+        if os.path.exists(p):
+            os.remove(p)
 
 
 def rnd_name():
@@ -69,16 +80,33 @@ def main():
     if cmd == "init":
         key = secrets.token_bytes(32)
         json.dump(wrap_key(pw, key), open(KEYFILE, "w"), indent=1)
-        save_list(key, [])
+        save_list(key, {"albums": [], "tracks": []})
         return print("Backstage angelegt.")
     key = content_key(pw)
-    items = load_list(key)
+    data = load_list(key)
+    items = data["tracks"]
     if cmd == "passwd":
         json.dump(wrap_key(a[1], key), open(KEYFILE, "w"), indent=1)
         print("Passwort geändert.")
     elif cmd == "list":
+        for al in data["albums"]:
+            print("ALBUM", al["id"], "|", al["title"])
         for t in items:
-            print(t["id"], "|", t["title"], "|", t.get("note", ""), "|", t["file"])
+            print(t["id"], "|", t["title"], "|", t.get("album", "-"), "|", t.get("note", ""), "|", t["file"])
+    elif cmd == "album-add":
+        fc = rnd_name()
+        open(os.path.join(ROOT, fc), "wb").write(enc(key, open(a[3], "rb").read()))
+        data["albums"].append({"id": a[1], "title": a[2], "cover": "backstage/" + fc})
+        save_list(key, data)
+        print("Album angelegt:", a[1], a[2])
+    elif cmd == "album-remove":
+        for al in [x for x in data["albums"] if x["id"] == a[1]]:
+            drop_files(al["cover"])
+        for t in [x for x in items if x.get("album") == a[1]]:
+            drop_files(t["file"], t["cover"])
+        data = {"albums": [x for x in data["albums"] if x["id"] != a[1]], "tracks": [x for x in items if x.get("album") != a[1]]}
+        save_list(key, data)
+        print("Album entfernt.")
     elif cmd == "add":
         mp3, title, cover = a[1], a[2], a[3]
         opts = dict(zip(a[4::2], a[5::2]))
@@ -93,20 +121,21 @@ def main():
             t["lyrics"] = open(opts["--lyrics"], encoding="utf-8").read().strip()
         if "--note" in opts:
             t["note"] = opts["--note"]
+        if "--album" in opts:
+            assert any(x["id"] == opts["--album"] for x in data["albums"]), "Album fehlt"
+            t["album"] = opts["--album"]
         items.append(t)
-        save_list(key, items)
+        save_list(key, data)
         print("Hinzugefügt:", t["id"], title)
     elif cmd == "remove":
         keep = []
         for t in items:
             if t["id"] == a[1]:
-                for f in (t["file"], t["cover"]):
-                    p = os.path.join(ROOT, os.path.basename(f))
-                    if os.path.exists(p):
-                        os.remove(p)
+                drop_files(t["file"], t["cover"])
             else:
                 keep.append(t)
-        save_list(key, keep)
+        data["tracks"] = keep
+        save_list(key, data)
         print("Entfernt." if len(keep) < len(items) else "Nicht gefunden.")
     elif cmd == "export":
         t = next(x for x in items if x["id"] == a[1])
