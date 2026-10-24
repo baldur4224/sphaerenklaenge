@@ -16,6 +16,7 @@ Usage (password from the environment variable BACKSTAGE_PW):
   backstage.py album-add ALBUM_ID TITLE COVER     new album (its songs are added with --album)
   backstage.py album-remove ALBUM_ID              album and all its songs
   backstage.py track-set ID [--album ALBUM_ID] [--note TEXT] [--title TEXT]   ("" clears album/note)
+  backstage.py cover ID IMAGE                     new cover for a song or an album
   backstage.py album-text ALBUM_ID TEXT           short text by Baldur above the songs ("" removes it)
   backstage.py remove ID
   backstage.py export ID OUT.mp3 [OUT_COVER.jpg]   decrypt a song again (to publish it)
@@ -116,6 +117,16 @@ def main():
                 assert any(x["id"] == t["album"] for x in data["albums"]), "Album fehlt"
         save_list(key, data)
         print("Geändert.")
+    elif cmd == "cover":
+        # backstage.py cover ID IMAGE   new cover for a song or an album
+        for x in items + data["albums"]:
+            if x["id"] == a[1]:
+                drop_files(x["cover"])
+                fc = rnd_name()
+                open(os.path.join(ROOT, fc), "wb").write(enc(key, open(a[2], "rb").read()))
+                x["cover"] = "backstage/" + fc
+        save_list(key, data)
+        print("Cover ersetzt.")
     elif cmd == "album-text":
         for al in data["albums"]:
             if al["id"] == a[1]:
