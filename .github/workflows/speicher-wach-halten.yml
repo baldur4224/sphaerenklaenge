@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: |
-          curl -fsS -o /dev/null -w "%{http_code}\n" \
+          code=$(curl -sS -o body.txt -w "%{http_code}" \
             -H "apikey: sb_publishable_7yaty8Xl2nWNaKX85lF82A_AgYVvlSo" \
-            "https://iojcevbjeqyjcnvevwdv.supabase.co/rest/v1/beitraege?select=id&limit=1"
+            "https://iojcevbjeqyjcnvevwdv.supabase.co/rest/v1/beitraege?select=id&limit=1")
+          echo "::notice::Antwort $code $(head -c 200 body.txt)"
+          [ "$code" = "200" ]
