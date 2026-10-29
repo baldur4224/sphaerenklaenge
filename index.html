@@ -590,7 +590,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
         </div>
       </div>
-      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 18:15</p>
+      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 18:45</p>
     </section>
     <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
@@ -1897,7 +1897,7 @@ $("#bs-leave2").addEventListener("click", () => stepBack("sk"));
    and stay hidden until Baldur answers them in the backstage; then they appear here with the answer.
    The keys below are public by design: the database itself only lets visitors add new, hidden messages
    and read answered ones. Answering needs the backstage password (only a hash of it is sent). */
-const FRAGEN = { url: "", key: "" };
+const FRAGEN = { url: "https://iojcevbjeqyjcnvevwdv.supabase.co", key: "sb_publishable_7yaty8Xl2nWNaKX85lF82A_AgYVvlSo" };
 const frOn = () => !!(FRAGEN.url && FRAGEN.key);
 function frHeaders(json) {
   const h = { apikey: FRAGEN.key };
@@ -2023,7 +2023,10 @@ $("#bs-fr").addEventListener("click", async e => {
       ok = await frRpc("bs_loeschen", { p_token: bsToken, p_id: id });
       if (ok) toast("Nachricht gelöscht.");
     }
-  } catch (err) { ok = false; }
+  } catch (err) {
+    ok = false;
+    if (act === "loeschen" && err.status === 404) { toast("Löschen ist im Speicher noch nicht eingerichtet. Du kannst den Beitrag so lange verbergen.", true); return; }
+  }
   if (!ok) toast("Das hat nicht geklappt. Prüfe die Internetverbindung.", true);
   await frBsLoad(false);
 });

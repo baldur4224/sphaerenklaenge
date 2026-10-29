@@ -1,0 +1,15 @@
+# Supabase legt kostenlose Projekte still, wenn eine Woche lang kaum jemand zugreift.
+# Dieser Abruf liest alle zwei Tage die beantworteten Fragen, damit der Speicher wach bleibt.
+name: Speicher wach halten
+on:
+  schedule:
+    - cron: "17 6 */2 * *"
+  workflow_dispatch:
+jobs:
+  abruf:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -o /dev/null -w "%{http_code}\n" \
+            -H "apikey: sb_publishable_7yaty8Xl2nWNaKX85lF82A_AgYVvlSo" \
+            "https://iojcevbjeqyjcnvevwdv.supabase.co/rest/v1/beitraege?select=id&limit=1"
