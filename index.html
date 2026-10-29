@@ -350,6 +350,54 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .controls .round svg { width: 28px; height: 28px; }
 .controls .round.play { width: 76px; height: 76px; background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #b7842f); color: var(--on-gold); box-shadow: 0 10px 30px -10px rgba(217,169,69,.7); }
 .controls .round.play svg { width: 32px; height: 32px; }
+/* Player buttons as octagons in dark gold, the play button in bright gold (design by Baldur). */
+.controls .round, .mini .round {
+  position: relative; border-radius: 0; box-shadow: none;
+  clip-path: polygon(22% 0, 78% 0, 100% 22%, 100% 78%, 78% 100%, 22% 100%, 0 78%, 0 22%);
+  border: 1px solid #a98a4d;
+  background: linear-gradient(145deg, #4b3a20 0%, #20170c 42%, #090807 80%, #6c5128 100%);
+  color: #d8c18a; filter: drop-shadow(0 5px 7px #000) drop-shadow(0 0 4px #c59a4933);
+}
+.controls .round::before, .mini .round::before {
+  content: ""; position: absolute; inset: 4px; clip-path: inherit;
+  border: 1px solid #c7a65d; background: linear-gradient(145deg, #2e2415, #100c08 65%, #20170d);
+}
+.controls .round svg, .mini .round svg { position: relative; }
+.controls .round:hover, .mini .round:hover { color: #fff0b5; }
+.controls .round:focus-visible::before, .mini .round:focus-visible::before { border: 2px solid #fff0b5; }
+.controls .round.play, .mini .round.play {
+  background: linear-gradient(145deg, #fff0b0 0%, #e8bd58 34%, #b77b1c 72%, #68420e 100%);
+  color: #1b1306; border-color: #f4d982;
+  filter: drop-shadow(0 0 12px #e8bd5866) drop-shadow(0 8px 10px #000);
+}
+.controls .round.play::before, .mini .round.play::before {
+  inset: 5px; border-color: #ffe9a0;
+  background: linear-gradient(145deg, #fff2bb 0%, #efc85f 40%, #c48a23 78%, #8b5b13 100%);
+}
+.controls .round.play:focus-visible::before, .mini .round.play:focus-visible::before { border: 2px solid #1b1306; }
+.controls { gap: 12px; }
+.controls .round { width: 60px; height: 60px; }
+.controls .round svg { width: 24px; height: 24px; }
+.controls .round.play { width: 84px; height: 84px; }
+.controls .round.play svg { width: 32px; height: 32px; }
+.controls .round.small { width: 46px; height: 46px; color: #b39a64; }
+.controls .round.small::before, .mini .round::before { inset: 3px; }
+.mini .round.play::before { inset: 3px; }
+.controls .round.small svg { width: 19px; height: 19px; }
+.controls .round.small.on { color: #fff0b5; background: linear-gradient(145deg, #fff0b0, #b77b1c 60%, #68420e); }
+.controls .round.small.on::before { border-color: #f4d982; background: linear-gradient(145deg, #5a4420, #2a1e0e 65%, #4a3618); }
+@media (max-width: 370px) {
+  .controls { gap: 8px; }
+  .controls .round { width: 54px; height: 54px; }
+  .controls .round.play { width: 74px; height: 74px; }
+  .controls .round.small { width: 42px; height: 42px; }
+}
+/* Seek bar as a shooting star: gold trail up to the current position, star dust behind the glowing head.
+   The real slider lies invisibly on top, so tapping and dragging work as before. */
+.seek-fx { position: relative; height: 68px; margin: 0 -8px -10px; }
+.seek-fx canvas { position: absolute; top: 0; bottom: 0; left: -18px; width: calc(100% + 36px); height: 100%; pointer-events: none; }
+.seek-fx input[type=range] { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.seek-fx:focus-within canvas { filter: brightness(1.25); }
 .sheet-pick { justify-self: center; }
 .lyrics { border-top: 1px solid var(--line); padding-top: 18px; }
 .lyrics h3 { font-size: .75rem; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); margin: 0 0 12px; }
@@ -686,7 +734,10 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
       <button class="now-album" id="s-album"></button>
     </div>
     <div class="seek-wrap">
-      <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Position im Lied">
+      <div class="seek-fx">
+        <canvas id="seek-canvas" aria-hidden="true"></canvas>
+        <input type="range" id="seek" min="0" max="1000" value="0" step="1" aria-label="Position im Lied">
+      </div>
       <div class="times"><span id="t-cur">0:00</span><span id="t-dur">0:00</span></div>
     </div>
     <div class="controls">
@@ -1167,6 +1218,7 @@ function setSheet(el, open) {
   el.classList.toggle("open", open);
   el.setAttribute("aria-hidden", String(!open));
   if (open) { el.scrollTop = 0; setTimeout(() => el.querySelector(".sheet-top .round").focus(), 50); }
+  if (open && el.id === "sheet" && typeof seekFx !== "undefined") seekFx.kick();
   document.body.style.overflow = document.querySelector(".sheet.open") ? "hidden" : "";
 }
 $("#mini-open").addEventListener("click", () => openOverlay("p"));
@@ -1255,6 +1307,7 @@ let dragging = false;
 function setProgress(frac) {
   $("#mini-bar").style.width = (frac * 100).toFixed(2) + "%";
   if (!dragging) { $("#seek").value = Math.round(frac * 1000); $("#seek").style.setProperty("--p", (frac * 100).toFixed(2) + "%"); }
+  if (typeof seekFx !== "undefined") seekFx.kick();
 }
 audio.addEventListener("timeupdate", () => {
   const d = audio.duration || queue[state.i].dur;
@@ -1281,6 +1334,69 @@ $("#seek").addEventListener("change", e => {
   dragging = false;
   audio.currentTime = (e.target.value / 1000) * (audio.duration || queue[state.i].dur);
 });
+/* Shooting-star seek bar (design by Baldur): reads the position from the slider and draws a waving
+   gold trail with star dust behind a glowing head. Animates only while the player is open and visible;
+   with "reduce motion" it draws a still picture whenever the position changes. */
+var seekFx = (() => {
+  const cv = $("#seek-canvas"), ctx = cv.getContext("2d"), seek = $("#seek");
+  const still = matchMedia("(prefers-reduced-motion: reduce)");
+  let w = 0, h = 0, parts = [], raf = 0;
+  function resize() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = r.width; h = r.height;
+    if (!w) return;
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    parts = Array.from({ length: Math.min(900, Math.max(450, Math.floor(w * 2.2))) }, () => ({
+      x: Math.random(), lane: Math.random() * 2 - 1, size: .35 + Math.random() * 1.05,
+      seed: Math.random() * Math.PI * 2, twinkle: .55 + Math.random() * .45
+    }));
+  }
+  const wave = (x, t) => Math.sin(x * .035 + t * .00055) * 5.2 + Math.sin(x * .082 - t * .0007) * 2.3;
+  const live = () => $("#sheet").classList.contains("open") && !document.hidden;
+  function draw(now) {
+    raf = 0;
+    if (!w) resize();
+    if (!w) return;
+    const t = still.matches ? 0 : now, left = 26, right = w - 26, y = h * .5;
+    const head = left + (right - left) * (seek.value / 1000);
+    ctx.clearRect(0, 0, w, h);
+    ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y);
+    ctx.strokeStyle = "#40321f"; ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
+    if (head > left) {
+      const pts = [];
+      for (let x = left; x <= head; x += 2) pts.push([x, y + wave(x, t)]);
+      pts.push([head, y + wave(head, t)]);
+      const path = () => { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); };
+      path(); ctx.strokeStyle = "#e8bd58"; ctx.lineWidth = 11; ctx.globalAlpha = .26; ctx.shadowColor = "#f3ca66"; ctx.shadowBlur = 15; ctx.stroke();
+      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+      path(); ctx.strokeStyle = "#d8a941"; ctx.lineWidth = 4.2; ctx.globalAlpha = .72; ctx.stroke();
+      path(); ctx.strokeStyle = "#fff0b5"; ctx.lineWidth = 1.35; ctx.globalAlpha = .98; ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+    const reach = (right - left) * .56;
+    for (const p of parts) {
+      const x = left + p.x * (right - left), dist = head - x;
+      if (dist <= 0 || dist > reach) continue;
+      const yy = y + wave(x, t) + p.lane * (2 + dist * .105);
+      const fade = 1 - dist / reach, tw = .62 + .38 * Math.sin(t * .004 + p.seed);
+      ctx.beginPath(); ctx.arc(x, yy, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,${Math.round(207 + tw * 35)},${Math.round(105 + tw * 95)},${fade * p.twinkle * .88})`;
+      ctx.fill();
+    }
+    const hy = y + wave(head, t), glow = ctx.createRadialGradient(head, hy, 0, head, hy, 23);
+    glow.addColorStop(0, "rgba(255,248,213,.95)"); glow.addColorStop(.18, "rgba(255,221,125,.72)"); glow.addColorStop(1, "rgba(232,189,88,0)");
+    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(head, hy, 23, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(head, hy, 3.1, 0, Math.PI * 2);
+    ctx.fillStyle = "#fff7d4"; ctx.shadowColor = "#ffe7a0"; ctx.shadowBlur = 9; ctx.fill(); ctx.shadowBlur = 0;
+    if (!still.matches && live()) raf = requestAnimationFrame(draw);
+  }
+  const kick = () => { if (!raf && live()) raf = requestAnimationFrame(draw); };
+  new ResizeObserver(() => { resize(); kick(); }).observe(cv);
+  document.addEventListener("visibilitychange", kick);
+  seek.addEventListener("input", kick);
+  return { kick };
+})();
 /* Next/previous stay among the published songs, or among the backstage songs. */
 function stepIdx(d) {
   const cur = queue[state.i], idx = queue.map((t, i) => !!t.bs === !!cur.bs ? i : -1).filter(i => i >= 0);
