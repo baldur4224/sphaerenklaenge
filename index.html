@@ -164,7 +164,14 @@ h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2.5rem, 12v
 .fr-count { display: block; color: var(--muted); font-weight: 400; font-size: .82rem; margin-top: 2px; }
 .fr-count:empty { display: none; }
 .fr-merk { margin: 0; font-family: var(--display); font-size: 1.12rem; line-height: 1.45; color: var(--gold-hi) !important; }
-.fr-form { display: grid; gap: 8px; }
+.fr-schreiben { border: 1px solid rgba(217,169,69,.45); border-radius: 14px; background: rgba(217,169,69,.06); }
+.fr-schreiben summary { list-style: none; cursor: pointer; min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 8px 14px; color: var(--gold-hi); font-weight: 600; }
+.fr-schreiben summary::-webkit-details-marker { display: none; }
+.fr-schreiben summary > svg:first-child { width: 18px; height: 18px; flex: none; color: var(--gold); }
+.fr-schreiben summary span { flex: 1; }
+.fr-schreiben .chev { width: 18px; height: 18px; color: var(--gold); flex: none; transition: transform .2s; }
+.fr-schreiben[open] .chev { transform: rotate(180deg); }
+.fr-form { display: grid; gap: 8px; padding: 0 14px 16px; }
 .fr-label { font-size: .85rem; color: var(--muted); margin-top: 4px; }
 .fr-label span { opacity: .75; }
 .fr-in { width: 100%; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 10px 14px; font: inherit; font-size: 1rem; }
@@ -175,7 +182,8 @@ select.fr-in { appearance: none; -webkit-appearance: none; padding-right: 40px; 
 .fr-note { margin: 0; font-size: .82rem; color: var(--muted); }
 .fr-msg { margin: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(217,169,69,.45); background: rgba(217,169,69,.08); color: var(--fg); }
 .fr-msg.err { border-color: rgba(220,110,90,.55); background: rgba(220,110,90,.08); }
-.fr-list { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+.fr-list { display: grid; gap: 12px; }
+.fr-list > p.fr-list-head { text-align: left; font-size: 1.05rem; margin: 6px 0 0; font-family: var(--display); color: var(--gold-hi); font-size: 1.05rem; }
 .fr-list:empty { display: none; }
 .fr-list > p { margin: 0; color: var(--muted); font-size: .9rem; text-align: center; }
 .fr-item { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 8px; background: var(--surface-2); }
@@ -383,7 +391,7 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .tipp-head { flex: 1; min-width: 0; font-weight: 500; }
 .tipp-head b { color: var(--gold); font-weight: 700; }
 .tipp .chev { width: 18px; height: 18px; color: var(--gold); flex: none; transition: transform .2s; }
-.tipp[open] .chev { transform: rotate(180deg); }
+.tipp[open] > summary .chev { transform: rotate(180deg); }
 .tipp-body { padding: 4px 16px 18px; display: grid; gap: 14px; }
 .tipp-body > p { margin: 0; color: var(--muted); }
 .tipp-steps img { display: block; width: 100%; height: auto; margin-top: 10px; border-radius: 10px; border: 1px solid var(--line); }
@@ -475,6 +483,8 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
       </summary>
       <div class="tipp-body">
         <p class="fr-merk" id="fr-merk">Hast du eine Frage zu einem Lied? Oder hat dich ein Song berührt? Teil mit uns, was du fühlst – wir antworten dir hier.</p>
+        <details class="fr-schreiben" id="fr-schreiben">
+          <summary><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Frage stellen oder Empfindung teilen</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
         <form class="fr-form" id="fr-form" novalidate>
           <label class="fr-label" for="fr-lied">Zu welchem Lied?</label>
           <select class="fr-in" id="fr-lied"><option value="">Allgemein, kein bestimmtes Lied</option></select>
@@ -483,9 +493,11 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <label class="fr-label" for="fr-name">Dein Name <span>(freiwillig)</span></label>
           <input class="fr-in" id="fr-name" type="text" maxlength="60" autocomplete="nickname" placeholder="z. B. Anna">
           <button class="pill primary" id="fr-send" type="submit">Absenden</button>
-          <p class="fr-note">Deine Nachricht erscheint hier, sobald Baldur geantwortet hat.</p>
+          <p class="fr-note">Deine Nachricht erscheint unten, sobald Baldur geantwortet hat.</p>
           <p class="fr-msg" id="fr-msg" hidden></p>
         </form>
+        </details>
+        <p class="fr-msg" id="fr-done" hidden></p>
         <div class="fr-list" id="fr-list"></div>
       </div>
     </details>
@@ -590,7 +602,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
         </div>
       </div>
-      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 18:45</p>
+      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 18:50</p>
     </section>
     <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
@@ -1923,7 +1935,7 @@ async function frLoadPublic() {
     const rows = await frFetch("beitraege?select=id,erstellt,name,lied,text,antwort,beantwortet&order=beantwortet.desc&limit=100", { headers: frHeaders() });
     frLoaded = true;
     $("#fr-count").textContent = rows.length ? (rows.length === 1 ? "1 beantwortete Nachricht" : rows.length + " beantwortete Nachrichten") : "";
-    list.innerHTML = rows.length ? rows.map(b => `<article class="fr-item">${frItem(b)}</article>`).join("")
+    list.innerHTML = rows.length ? `<p class="fr-list-head">Beantwortete Fragen</p>` + rows.map(b => `<article class="fr-item">${frItem(b)}</article>`).join("")
       : "<p>Noch keine beantworteten Fragen. Sei die oder der Erste!</p>";
   } catch (e) {
     list.innerHTML = "<p>Die Antworten konnten gerade nicht geladen werden.</p>";
@@ -1938,6 +1950,7 @@ function frInit() {
   frLoadPublic();
 }
 function frMsg(text, err) { const m = $("#fr-msg"); m.textContent = text; m.classList.toggle("err", !!err); m.hidden = !text; }
+$("#fr-schreiben").addEventListener("toggle", () => { if ($("#fr-schreiben").open) $("#fr-done").hidden = true; });
 $("#fr-form").addEventListener("submit", async e => {
   e.preventDefault();
   const text = $("#fr-text").value.trim(), name = $("#fr-name").value.trim(), lied = $("#fr-lied").value;
@@ -1947,7 +1960,10 @@ $("#fr-form").addEventListener("submit", async e => {
   try {
     await frFetch("beitraege", { method: "POST", headers: { ...frHeaders(true), Prefer: "return=minimal" }, body: JSON.stringify({ text, name: name || null, lied: lied || null }) });
     $("#fr-text").value = "";
-    frMsg("Danke! Deine Nachricht ist angekommen. Sobald Baldur geantwortet hat, erscheint sie hier.");
+    $("#fr-schreiben").open = false;
+    const done = $("#fr-done");
+    done.textContent = "Danke! Deine Nachricht ist angekommen. Sobald Baldur geantwortet hat, erscheint sie hier.";
+    done.hidden = false;
   } catch (err) {
     frMsg(/zu viele/i.test(err.message) ? "Gerade kommen sehr viele Nachrichten an. Versuch es bitte später noch einmal."
       : "Das hat leider nicht geklappt. Prüfe die Internetverbindung und versuch es noch einmal.", true);
