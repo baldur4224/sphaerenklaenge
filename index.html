@@ -180,6 +180,13 @@ textarea.fr-in { resize: vertical; min-height: 110px; line-height: 1.45; }
 select.fr-in { appearance: none; -webkit-appearance: none; padding-right: 40px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9a945' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; }
 .fr-form .pill { justify-self: start; margin-top: 8px; }
 .fr-note { margin: 0; font-size: .82rem; color: var(--muted); }
+.fr-privat { display: flex; gap: 12px; align-items: flex-start; margin-top: 6px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); cursor: pointer; }
+.fr-privat input { width: 22px; height: 22px; margin: 1px 0 0; accent-color: var(--gold); flex: none; }
+.fr-privat span { font-size: .85rem; color: var(--muted); line-height: 1.4; }
+.fr-privat b { display: block; color: var(--fg); font-size: .95rem; margin-bottom: 2px; }
+.fr-mine .fr-item { border-color: rgba(201,167,232,.45); }
+.fr-wait { margin: 0; color: var(--muted); font-size: .88rem; font-style: italic; }
+.fr-privat-tag { color: #c9a7e8; font-weight: 600; }
 .fr-msg { margin: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(217,169,69,.45); background: rgba(217,169,69,.08); color: var(--fg); }
 .fr-msg.err { border-color: rgba(220,110,90,.55); background: rgba(220,110,90,.08); }
 .fr-list { display: grid; gap: 12px; }
@@ -200,6 +207,17 @@ select.fr-in { appearance: none; -webkit-appearance: none; padding-right: 40px; 
 .bs-fr .fr-state { font-weight: 700; }
 .bs-fr .fr-state.neu { color: var(--gold-hi); }
 .bs-fr textarea { min-height: 90px; }
+.bs-fr-sub { margin: 10px 0 0; color: var(--muted); font-size: .85rem; }
+.bs-fr .fr-state.privat { color: #c9a7e8; }
+.bs-done { padding: 0; gap: 0; }
+.bs-done summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.bs-done summary::-webkit-details-marker { display: none; }
+.bs-done-top { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.bs-done-q { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--fg); }
+.bs-done .chev { width: 18px; height: 18px; color: var(--gold); flex: none; transition: transform .2s; }
+.bs-done[open] .chev { transform: rotate(180deg); }
+.bs-done[open] .bs-done-q { display: none; }
+.bs-done-body { display: grid; gap: 8px; padding: 0 14px 14px; }
 .bs-fr-von { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .bs-fr-von > span { color: var(--muted); font-size: .85rem; margin-right: 2px; }
 .bs-fr-von .pill { min-height: 40px; padding: 0 16px; }
@@ -497,12 +515,14 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <textarea class="fr-in" id="fr-text" rows="4" maxlength="2000" placeholder="Schreib einfach los …"></textarea>
           <label class="fr-label" for="fr-name">Dein Name <span>(freiwillig)</span></label>
           <input class="fr-in" id="fr-name" type="text" maxlength="60" autocomplete="nickname" placeholder="z. B. Anna">
+          <label class="fr-privat"><input type="checkbox" id="fr-privat"><span><b>Privat fragen</b>Die Frage und die Antwort sieht niemand außer dir. Die Antwort erscheint nur hier auf diesem Gerät, in diesem Browser.</span></label>
           <button class="pill primary" id="fr-send" type="submit">Absenden</button>
           <p class="fr-note">Deine Nachricht erscheint unten, sobald Baldur geantwortet hat.</p>
           <p class="fr-msg" id="fr-msg" hidden></p>
         </form>
         </details>
         <p class="fr-msg" id="fr-done" hidden></p>
+        <div class="fr-list fr-mine" id="fr-mine" hidden></div>
         <div class="fr-list" id="fr-list"></div>
       </div>
     </details>
@@ -607,7 +627,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
         </div>
       </div>
-      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 18:55</p>
+      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 19:10</p>
     </section>
     <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
@@ -1934,12 +1954,33 @@ const frMeta = b => [b.lied ? "<b>" + frText(b.lied) + "</b>" : "<b>Allgemein</b
 const frItem = b => `<p class="fr-meta">${frMeta(b)}</p><p class="fr-q">${frText(b.text)}</p>` +
   (b.antwort ? `<p class="fr-a"><span class="fr-a-head">Antwort von ${frText(b.antwort_von || "Baldur")}</span>${frText(b.antwort)}</p>` : "");
 let frLoaded = false;
+/* Private questions: this device keeps a secret code per question; the database only knows its hash
+   and hands out question and answer only to whoever shows the code. */
+const frCodes = () => { try { const a = JSON.parse(localStorage.getItem("sk-fr-codes") || "[]"); return Array.isArray(a) ? a.filter(c => /^[0-9a-f]{64}$/.test(c)) : []; } catch (e) { return []; } };
+const hex = buf => [...new Uint8Array(buf)].map(x => x.toString(16).padStart(2, "0")).join("");
+async function frLoadMine() {
+  const codes = frCodes(), box = $("#fr-mine");
+  if (!codes.length) { box.hidden = true; return 0; }
+  try {
+    const rows = await frRpc("meine_fragen", { p_codes: codes.slice(-50) });
+    if (!Array.isArray(rows) || !rows.length) { box.hidden = true; return 0; }
+    box.innerHTML = `<p class="fr-list-head">Deine privaten Fragen</p>` + rows.map(b => `<article class="fr-item">
+      <p class="fr-meta"><span class="fr-privat-tag">Privat</span><span>·</span>${frMeta(b)}</p><p class="fr-q">${frText(b.text)}</p>
+      ${b.antwort ? `<p class="fr-a"><span class="fr-a-head">Antwort von ${frText(b.antwort_von || "Baldur")}</span>${frText(b.antwort)}</p>` : `<p class="fr-wait">Wartet noch auf eine Antwort.</p>`}
+    </article>`).join("");
+    box.hidden = false;
+    return rows.filter(b => b.antwort).length;
+  } catch (e) { box.hidden = true; return 0; }
+}
 async function frLoadPublic() {
   const list = $("#fr-list");
+  const mineDone = frLoadMine();
   try {
     const rows = await frFetch("beitraege?select=id,erstellt,name,lied,text,antwort,antwort_von,beantwortet&order=beantwortet.desc&limit=100", { headers: frHeaders() });
     frLoaded = true;
-    $("#fr-count").textContent = rows.length ? (rows.length === 1 ? "1 beantwortete Nachricht" : rows.length + " beantwortete Nachrichten") : "";
+    const mine = await mineDone;
+    $("#fr-count").textContent = [mine ? (mine === 1 ? "1 private Antwort für dich" : mine + " private Antworten für dich") : "",
+      rows.length ? (rows.length === 1 ? "1 beantwortete Nachricht" : rows.length + " beantwortete Nachrichten") : ""].filter(Boolean).join(" · ");
     list.innerHTML = rows.length ? `<p class="fr-list-head">Beantwortete Fragen</p>` + rows.map(b => `<article class="fr-item">${frItem(b)}</article>`).join("")
       : "<p>Noch keine beantworteten Fragen. Sei die oder der Erste!</p>";
   } catch (e) {
@@ -1958,16 +1999,26 @@ function frMsg(text, err) { const m = $("#fr-msg"); m.textContent = text; m.clas
 $("#fr-schreiben").addEventListener("toggle", () => { if ($("#fr-schreiben").open) $("#fr-done").hidden = true; });
 $("#fr-form").addEventListener("submit", async e => {
   e.preventDefault();
-  const text = $("#fr-text").value.trim(), name = $("#fr-name").value.trim(), lied = $("#fr-lied").value;
+  const text = $("#fr-text").value.trim(), name = $("#fr-name").value.trim(), lied = $("#fr-lied").value, privat = $("#fr-privat").checked;
   if (text.length < 2) { frMsg("Schreib bitte zuerst deine Frage oder Empfindung.", true); $("#fr-text").focus(); return; }
   const btn = $("#fr-send");
   btn.disabled = true; btn.textContent = "Wird gesendet …"; frMsg("");
   try {
-    await frFetch("beitraege", { method: "POST", headers: { ...frHeaders(true), Prefer: "return=minimal" }, body: JSON.stringify({ text, name: name || null, lied: lied || null }) });
-    $("#fr-text").value = "";
+    const row = { text, name: name || null, lied: lied || null };
+    let code = null;
+    if (privat) {
+      code = hex(crypto.getRandomValues(new Uint8Array(32)).buffer);
+      row.privat = true;
+      row.schluessel = hex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code)));
+    }
+    await frFetch("beitraege", { method: "POST", headers: { ...frHeaders(true), Prefer: "return=minimal" }, body: JSON.stringify(row) });
+    if (code) { try { localStorage.setItem("sk-fr-codes", JSON.stringify(frCodes().concat(code))); } catch (e) {} }
+    $("#fr-text").value = ""; $("#fr-privat").checked = false;
     $("#fr-schreiben").open = false;
     const done = $("#fr-done");
-    done.textContent = "Danke! Deine Nachricht ist angekommen. Sobald Baldur geantwortet hat, erscheint sie hier.";
+    done.textContent = code ? "Danke! Deine private Frage ist angekommen. Die Antwort siehst nur du, hier unter „Deine privaten Fragen“."
+      : "Danke! Deine Nachricht ist angekommen. Sobald Baldur geantwortet hat, erscheint sie hier.";
+    if (code) frLoadMine();
     done.hidden = false;
   } catch (err) {
     frMsg(/zu viele/i.test(err.message) ? "Gerade kommen sehr viele Nachrichten an. Versuch es bitte später noch einmal."
@@ -2009,22 +2060,34 @@ async function frBsLoad(announce) {
 function renderBsFr() {
   const n = bsFr.filter(b => !b.antwort).length;
   $("#bs-fr-badge").textContent = n; $("#bs-fr-badge").hidden = !n;
-  /* new ones first, then the rest by date */
+  /* new ones first and open; answered ones folded away below, newest first */
   const rows = bsFr.slice().sort((a, b) => (!!a.antwort - !!b.antwort) || (new Date(b.erstellt) - new Date(a.erstellt)));
-  $("#bs-fr").innerHTML = rows.length ? rows.map(b => {
-    const st = !b.antwort ? `<span class="fr-state neu">Neu</span>` : b.sichtbar ? `<span class="fr-state">Beantwortet · sichtbar</span>` : `<span class="fr-state">Beantwortet · verborgen</span>`;
-    return `<article class="fr-item${b.antwort ? "" : " neu"}" data-fr="${esc(b.id)}">
-      <p class="fr-meta">${st}<span>·</span>${frMeta(b)}</p>
-      <p class="fr-q">${frText(b.text)}</p>
-      <div class="bs-fr-von" role="radiogroup" aria-label="Wer antwortet?"><span>Antwort von</span>${FR_VON.map(v => `<button type="button" class="pill${v === (b.antwort_von || frVonLetzt()) ? " on" : ""}" role="radio" aria-checked="${v === (b.antwort_von || frVonLetzt())}" data-fr-von="${esc(v)}">${esc(v)}</button>`).join("")}</div>
+  const offen = new Set([...document.querySelectorAll("#bs-fr details[open]")].map(d => d.dataset.fr));
+  const body = b => {
+    const von = b.antwort_von || frVonLetzt();
+    return `<p class="fr-q">${frText(b.text)}</p>
+      <div class="bs-fr-von" role="radiogroup" aria-label="Wer antwortet?"><span>Antwort von</span>${FR_VON.map(v => `<button type="button" class="pill${v === von ? " on" : ""}" role="radio" aria-checked="${v === von}" data-fr-von="${esc(v)}">${esc(v)}</button>`).join("")}</div>
       <textarea class="fr-in" maxlength="4000" placeholder="Deine Antwort …" aria-label="Antwort">${frText(b.antwort)}</textarea>
       <div class="bs-fr-actions">
-        <button class="pill primary" data-fr-act="antworten">${b.antwort ? "Antwort ändern" : "Antworten und zeigen"}</button>
-        ${b.antwort ? `<button class="pill" data-fr-act="${b.sichtbar ? "verbergen" : "zeigen"}">${b.sichtbar ? "Verbergen" : "Wieder zeigen"}</button>` : ""}
+        <button class="pill primary" data-fr-act="antworten">${b.antwort ? "Antwort ändern" : b.privat ? "Privat antworten" : "Antworten und zeigen"}</button>
+        ${b.antwort && !b.privat ? `<button class="pill" data-fr-act="${b.sichtbar ? "verbergen" : "zeigen"}">${b.sichtbar ? "Verbergen" : "Wieder zeigen"}</button>` : ""}
         <button class="linkish" data-fr-act="loeschen">Löschen</button>
-      </div>
-    </article>`;
-  }).join("") : `<p class="bs-empty">Noch keine Nachrichten.</p>`;
+      </div>`;
+  };
+  const neu = rows.filter(b => !b.antwort), fertig = rows.filter(b => b.antwort);
+  const privat = b => b.privat ? `<span class="fr-state privat">Privat</span><span>·</span>` : "";
+  $("#bs-fr").innerHTML = (rows.length ? "" : `<p class="bs-empty">Noch keine Nachrichten.</p>`) +
+    neu.map(b => `<article class="fr-item neu" data-fr="${esc(b.id)}">
+      <p class="fr-meta"><span class="fr-state neu">Neu</span><span>·</span>${privat(b)}${frMeta(b)}</p>${body(b)}
+    </article>`).join("") +
+    (fertig.length ? `<p class="bs-fr-sub">Beantwortet (${fertig.length}) · zum Bearbeiten antippen</p>` : "") +
+    fertig.map(b => {
+      const st = b.privat ? "Privat beantwortet" : b.sichtbar ? "Sichtbar" : "Verborgen";
+      return `<details class="fr-item bs-done" data-fr="${esc(b.id)}"${offen.has(b.id) ? " open" : ""}>
+      <summary><span class="bs-done-top"><span class="fr-meta"><span class="fr-state${b.privat ? " privat" : ""}">${st}</span><span>·</span>${frMeta(b)}<span>·</span>Antwort: ${frText(b.antwort_von || "Baldur")}</span><span class="bs-done-q">${frText(b.text)}</span></span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+      <div class="bs-done-body">${body(b)}</div>
+    </details>`;
+    }).join("");
 }
 $("#bs-fr").addEventListener("click", async e => {
   const vonBtn = e.target.closest("[data-fr-von]");

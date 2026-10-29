@@ -152,3 +152,26 @@ begin
 end $$;
 revoke all on function public.bs_antworten(text, uuid, text, text) from public;
 grant execute on function public.bs_antworten(text, uuid, text, text) to anon, authenticated;
+
+-- Ergänzung: private Fragen. Die Seite erzeugt pro Frage einen geheimen Code und behält ihn im Browser;
+-- gespeichert wird nur dessen SHA-256. Nur wer den Code zeigt, bekommt Frage und Antwort zurück.
+alter table public.beitraege add column if not exists privat boolean not null default false;
+alter table public.beitraege add column if not exists schluessel text check (schluessel is null or schluessel ~ '^[0-9a-f]{64}$');
+alter table public.beitraege add constraint privat_braucht_schluessel check (not privat or schluessel is not null);
+grant insert (privat, schluessel) on public.beitraege to anon, authenticated;
+alter policy "beantwortete lesen" on public.beitraege using (sichtbar and not privat);
+
+create or replace function public.meine_fragen(p_codes text[]) returns json
+language plpgsql security definer set search_path = '' as $$
+begin
+  if p_codes is null or cardinality(p_codes) = 0 or cardinality(p_codes) > 50 then return '[]'::json; end if;
+  return coalesce((
+    select json_agg(json_build_object('id', b.id, 'erstellt', b.erstellt, 'name', b.name, 'lied', b.lied, 'text', b.text,
+                                      'antwort', b.antwort, 'antwort_von', b.antwort_von, 'beantwortet', b.beantwortet)
+                    order by b.erstellt desc)
+      from public.beitraege b
+     where b.privat
+       and b.schluessel in (select encode(extensions.digest(c, 'sha256'), 'hex') from unnest(p_codes) c where char_length(c) = 64)
+  ), '[]'::json);
+end $$;
+grant execute on function public.meine_fragen(text[]) to anon, authenticated;
