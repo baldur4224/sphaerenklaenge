@@ -381,6 +381,22 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .controls .round.small.on { color: #fff0b5; background: none; }
 .controls .round.small.on::before { background: linear-gradient(150deg, #fff0b5, #d9a945 50%, #9c6c1c); }
 .controls .round.small.on::after { background: radial-gradient(circle at 34% 24%, #6a5226 0%, #33260f 55%, #1a130a 100%); }
+/* All other play buttons (new releases, album page) get the same gold octagon as the player. */
+.nw-play, .round.play-lg {
+  position: relative; isolation: isolate; border: 0; border-radius: 0; background: none; box-shadow: none; color: #1b1306;
+  filter: drop-shadow(0 0 14px rgba(232, 189, 88, .4)) drop-shadow(0 6px 8px rgba(0, 0, 0, .85));
+}
+.nw-play::before, .nw-play::after, .round.play-lg::before, .round.play-lg::after {
+  content: ""; position: absolute; z-index: -1;
+  clip-path: polygon(29% 0, 71% 0, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0 71%, 0 29%);
+}
+.nw-play::before, .round.play-lg::before { inset: 0; background: linear-gradient(150deg, #f7dd8f 0%, #d4a447 40%, #a8741d 75%, #c99637 100%); }
+.nw-play::after, .round.play-lg::after { inset: 3px; background: radial-gradient(circle at 34% 22%, #fbe9b0 0%, #f0c662 30%, #dba73f 62%, #b98123 100%); }
+.nw-play svg, .round.play-lg svg { position: relative; }
+.round.play-lg:hover, .nw-play:hover, .nw-main:hover .nw-play { color: #1b1306; filter: brightness(1.06) drop-shadow(0 0 16px rgba(232, 189, 88, .5)) drop-shadow(0 6px 8px rgba(0, 0, 0, .85)); }
+.round.play-lg:focus-visible, .nw-play:focus-visible { outline: none; }
+.round.play-lg:focus-visible::before, .nw-play:focus-visible::before { background: #fff7dc; }
+.round.play-lg { width: 60px; height: 60px; }
 @media (max-width: 370px) {
   .controls { gap: 8px; }
   .controls .round { width: 54px; height: 54px; }
