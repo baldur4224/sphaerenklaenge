@@ -295,6 +295,18 @@ footer .mark-name { font-family: var(--display); font-size: 1rem; color: var(--g
 .sheet-top .label { font-family: var(--display); font-size: 1rem; color: var(--gold); text-align: center; flex: 1; }
 .sheet-top .round { color: var(--fg); }
 .big-cover { width: 100%; aspect-ratio: 1; max-width: 100%; object-fit: cover; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 30px 70px -24px rgba(0,0,0,.9), 0 0 60px -20px rgba(217,169,69,.4); }
+/* Full player fits the screen: the cover takes what is left of the screen height after title, seek bar and
+   buttons (about 400px), so the buttons stay visible without scrolling; on big screens the player grows. */
+#sheet .sheet-in { max-width: 540px; }
+#sheet .big-cover { justify-self: center; width: min(100%, max(170px, 100vh - 400px)); width: min(100%, max(170px, 100svh - 400px)); }
+/* Phone held sideways: cover on the left, title, seek bar and buttons on the right. */
+@media (orientation: landscape) and (max-height: 560px) {
+  #sheet .sheet-in { max-width: 900px; grid-template-columns: auto minmax(0, 1fr); column-gap: 28px; row-gap: 10px; align-items: start; }
+  #sheet .sheet-top { grid-column: 1 / -1; min-height: 44px; }
+  #sheet .big-cover { grid-column: 1; grid-row: 2 / span 5; width: max(150px, 100vh - 84px); width: max(150px, 100svh - 84px); }
+  #sheet .sheet-in > :not(.sheet-top):not(.big-cover) { grid-column: 2; }
+  #sheet .now-title { font-size: 1.35rem; }
+}
 .now-title { font-family: var(--display); font-weight: 400; font-size: 1.6rem; line-height: 1.15; margin: 0; text-wrap: balance; }
 .now-album { color: var(--gold); font-weight: 600; text-align: left; padding: 4px 0; }
 .now-album:hover { text-decoration: underline; }
