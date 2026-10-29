@@ -397,6 +397,36 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .round.play-lg:focus-visible, .nw-play:focus-visible { outline: none; }
 .round.play-lg:focus-visible::before, .nw-play:focus-visible::before { background: #fff7dc; }
 .round.play-lg { width: 60px; height: 60px; }
+/* Pill buttons as long octagons with a gold rim, in the same family as the player buttons:
+   dark ones with a dark-gold rim, primary ones in bright gold. Drawn by two clipped layers. */
+.pill { --cut: 14px; position: relative; isolation: isolate; border: 0 !important; border-radius: 0; background: none !important; }
+.selbar .pill, .shared .pill, .bs-fr-von .pill, .bs-fr-actions .pill { --cut: 12px; }
+.pill::before, .pill::after {
+  content: ""; position: absolute; z-index: -1; transition: background .2s;
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 calc(100% - var(--cut)), 0 var(--cut));
+}
+.pill::before { inset: 0; background: linear-gradient(150deg, #b89a5c 0%, #6e5530 35%, #3e3119 65%, #6a5229 100%); }
+.pill::after { inset: 1.5px; background: linear-gradient(180deg, #221b12 0%, #120e09 100%); }
+.pill:hover::before { background: linear-gradient(150deg, #f0d48a 0%, #b48a40 40%, #6e5530 70%, #a78446 100%); }
+.pill.on::before { background: linear-gradient(150deg, #fff0b5 0%, #d9a945 50%, #9c6c1c 100%); }
+.pill.on::after { background: linear-gradient(180deg, #3a2c14 0%, #1d160b 100%); }
+.pill.primary, .bs-fr-von .pill.on { color: var(--on-gold); filter: drop-shadow(0 0 14px rgba(232, 189, 88, .35)) drop-shadow(0 6px 10px rgba(0, 0, 0, .7)); }
+.pill.primary:hover, .bs-fr-von .pill.on:hover { filter: brightness(1.06) drop-shadow(0 0 16px rgba(232, 189, 88, .45)) drop-shadow(0 6px 10px rgba(0, 0, 0, .7)); }
+.pill.primary::before, .bs-fr-von .pill.on::before { background: linear-gradient(150deg, #f7dd8f 0%, #d4a447 40%, #a8741d 75%, #c99637 100%); }
+.pill.primary::after, .bs-fr-von .pill.on::after { inset: 2px; background: linear-gradient(180deg, #f8dc8e 0%, #ecc05c 40%, #d29f3d 75%, #b98426 100%); }
+.pill:focus-visible { outline: none; }
+.pill:focus-visible::before { background: #fff0b5; }
+/* The ＋ / ✓ toggle as a small octagon. */
+.mark .ring { position: relative; isolation: isolate; border: 0; border-radius: 0; background: none !important; }
+.mark .ring::before, .mark .ring::after { content: ""; position: absolute; z-index: -1; clip-path: polygon(29% 0, 71% 0, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0 71%, 0 29%); transition: background .2s; }
+.mark .ring::before { inset: 0; background: linear-gradient(150deg, #d9bd7c 0%, #8c6d36 35%, #4a3a1f 65%, #7d6131 100%); }
+.mark .ring::after { inset: 1.5px; background: radial-gradient(circle at 34% 24%, #3a2e1c 0%, #1a140c 60%, #0e0b07 100%); }
+.mark:hover .ring::before { background: linear-gradient(150deg, #fff0b5, #d9a945 50%, #9c6c1c); }
+.mark.on .ring { color: var(--on-gold); }
+.mark.on .ring::before { background: linear-gradient(150deg, #f7dd8f 0%, #d4a447 40%, #a8741d 75%, #c99637 100%); }
+.mark.on .ring::after { inset: 2px; background: radial-gradient(circle at 34% 22%, #fbe9b0 0%, #f0c662 30%, #dba73f 62%, #b98123 100%); }
+/* Small gold badges (now playing, selection count, done tick) as octagons too. */
+.card .now, .sel-count, .g-done .tick { border-radius: 0; clip-path: polygon(29% 0, 71% 0, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0 71%, 0 29%); }
 @media (max-width: 370px) {
   .controls { gap: 8px; }
   .controls .round { width: 54px; height: 54px; }
