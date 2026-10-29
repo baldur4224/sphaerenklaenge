@@ -175,3 +175,40 @@ begin
   ), '[]'::json);
 end $$;
 grant execute on function public.meine_fragen(text[]) to anon, authenticated;
+
+-- Ergänzung: Löschen im Backstage. Supabase lässt hier keine DELETE-Befehle ohne Rückfrage zu,
+-- darum leert bs_entfernen den Beitrag (Text, Name, Antwort, Schlüssel) und blendet ihn überall aus.
+alter table public.beitraege add column if not exists geloescht boolean not null default false;
+alter policy "beantwortete lesen" on public.beitraege using (sichtbar and not privat and not geloescht);
+
+create or replace function public.bs_liste(p_token text) returns json
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not intern.pruefen(p_token) then return null; end if;
+  return coalesce((select json_agg(b order by b.erstellt desc) from public.beitraege b where not b.geloescht), '[]'::json);
+end $$;
+
+create or replace function public.bs_entfernen(p_token text, p_id uuid) returns boolean
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not intern.pruefen(p_token) then return false; end if;
+  update public.beitraege
+     set geloescht = true, sichtbar = false, text = '(gelöscht)', name = null, antwort = null, schluessel = null, privat = false
+   where id = p_id;
+  return found;
+end $$;
+grant execute on function public.bs_entfernen(text, uuid) to anon, authenticated;
+
+create or replace function public.meine_fragen(p_codes text[]) returns json
+language plpgsql security definer set search_path = '' as $$
+begin
+  if p_codes is null or cardinality(p_codes) = 0 or cardinality(p_codes) > 50 then return '[]'::json; end if;
+  return coalesce((
+    select json_agg(json_build_object('id', b.id, 'erstellt', b.erstellt, 'name', b.name, 'lied', b.lied, 'text', b.text,
+                                      'antwort', b.antwort, 'antwort_von', b.antwort_von, 'beantwortet', b.beantwortet)
+                    order by b.erstellt desc)
+      from public.beitraege b
+     where b.privat and not b.geloescht
+       and b.schluessel in (select encode(extensions.digest(c, 'sha256'), 'hex') from unnest(p_codes) c where char_length(c) = 64)
+  ), '[]'::json);
+end $$;

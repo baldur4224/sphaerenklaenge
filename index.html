@@ -627,7 +627,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
         </div>
       </div>
-      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 19:10</p>
+      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 19:15</p>
     </section>
     <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
@@ -2113,12 +2113,11 @@ $("#bs-fr").addEventListener("click", async e => {
       if (ok) toast(act === "zeigen" ? "Wird wieder auf der Hauptseite gezeigt." : "Auf der Hauptseite verborgen.");
     } else if (act === "loeschen") {
       if (btn.dataset.sure !== "1") { btn.dataset.sure = "1"; btn.textContent = "Wirklich löschen?"; setTimeout(() => { if (btn.isConnected) { btn.dataset.sure = ""; btn.textContent = "Löschen"; } }, 4000); return; }
-      ok = await frRpc("bs_loeschen", { p_token: bsToken, p_id: id });
+      ok = await frRpc("bs_entfernen", { p_token: bsToken, p_id: id });
       if (ok) toast("Nachricht gelöscht.");
     }
   } catch (err) {
     ok = false;
-    if (act === "loeschen" && err.status === 404) { toast("Löschen ist im Speicher noch nicht eingerichtet. Du kannst den Beitrag so lange verbergen.", true); return; }
   }
   if (!ok) toast("Das hat nicht geklappt. Prüfe die Internetverbindung.", true);
   await frBsLoad(false);
