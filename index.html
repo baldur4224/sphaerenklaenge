@@ -350,42 +350,37 @@ input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 .controls .round svg { width: 28px; height: 28px; }
 .controls .round.play { width: 76px; height: 76px; background: linear-gradient(180deg, var(--gold-hi), var(--gold) 60%, #b7842f); color: var(--on-gold); box-shadow: 0 10px 30px -10px rgba(217,169,69,.7); }
 .controls .round.play svg { width: 32px; height: 32px; }
-/* Player buttons as octagons in dark gold, the play button in bright gold (design by Baldur). */
+/* Player buttons as octagons (design by Baldur): a gold rim around a dark fill, the play button in bright gold.
+   The octagon is drawn by two clipped layers, so the glow around it can follow its shape. */
 .controls .round, .mini .round {
-  position: relative; border-radius: 0; box-shadow: none;
-  clip-path: polygon(22% 0, 78% 0, 100% 22%, 100% 78%, 78% 100%, 22% 100%, 0 78%, 0 22%);
-  border: 1px solid #a98a4d;
-  background: linear-gradient(145deg, #4b3a20 0%, #20170c 42%, #090807 80%, #6c5128 100%);
-  color: #d8c18a; filter: drop-shadow(0 5px 7px #000) drop-shadow(0 0 4px #c59a4933);
+  position: relative; isolation: isolate; border: 0; border-radius: 0; box-shadow: none; background: none;
+  color: #bfa46c; filter: drop-shadow(0 5px 7px rgba(0, 0, 0, .85));
 }
-.controls .round::before, .mini .round::before {
-  content: ""; position: absolute; inset: 4px; clip-path: inherit;
-  border: 1px solid #c7a65d; background: linear-gradient(145deg, #2e2415, #100c08 65%, #20170d);
+.controls .round::before, .controls .round::after, .mini .round::before, .mini .round::after {
+  content: ""; position: absolute; z-index: -1;
+  clip-path: polygon(29% 0, 71% 0, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0 71%, 0 29%);
 }
+.controls .round::before, .mini .round::before { inset: 0; background: linear-gradient(150deg, #d9bd7c 0%, #8c6d36 30%, #4a3a1f 60%, #7d6131 100%); }
+.controls .round::after, .mini .round::after { inset: 2px; background: radial-gradient(circle at 34% 24%, #4a3b24 0%, #221a10 50%, #0e0b07 100%); }
 .controls .round svg, .mini .round svg { position: relative; }
-.controls .round:hover, .mini .round:hover { color: #fff0b5; }
-.controls .round:focus-visible::before, .mini .round:focus-visible::before { border: 2px solid #fff0b5; }
-.controls .round.play, .mini .round.play {
-  background: linear-gradient(145deg, #fff0b0 0%, #e8bd58 34%, #b77b1c 72%, #68420e 100%);
-  color: #1b1306; border-color: #f4d982;
-  filter: drop-shadow(0 0 12px #e8bd5866) drop-shadow(0 8px 10px #000);
-}
-.controls .round.play::before, .mini .round.play::before {
-  inset: 5px; border-color: #ffe9a0;
-  background: linear-gradient(145deg, #fff2bb 0%, #efc85f 40%, #c48a23 78%, #8b5b13 100%);
-}
-.controls .round.play:focus-visible::before, .mini .round.play:focus-visible::before { border: 2px solid #1b1306; }
+.controls .round:hover, .mini .round:hover { color: #f3dd9e; }
+.controls .round:focus-visible, .mini .round:focus-visible { outline: none; }
+.controls .round:focus-visible::before, .mini .round:focus-visible::before { background: #fff0b5; }
+.controls .round.play, .mini .round.play { background: none; box-shadow: none; color: #1b1306; filter: drop-shadow(0 0 16px rgba(232, 189, 88, .45)) drop-shadow(0 8px 10px rgba(0, 0, 0, .9)); }
+.controls .round.play:hover, .mini .round.play:hover { color: #1b1306; }
+.controls .round.play::before, .mini .round.play::before { background: linear-gradient(150deg, #f7dd8f 0%, #d4a447 40%, #a8741d 75%, #c99637 100%); }
+.controls .round.play::after, .mini .round.play::after { inset: 3px; background: radial-gradient(circle at 34% 22%, #fbe9b0 0%, #f0c662 30%, #dba73f 62%, #b98123 100%); }
+.controls .round.play:focus-visible::before, .mini .round.play:focus-visible::before { background: #fff7dc; }
 .controls { gap: 12px; }
 .controls .round { width: 60px; height: 60px; }
 .controls .round svg { width: 24px; height: 24px; }
 .controls .round.play { width: 84px; height: 84px; }
 .controls .round.play svg { width: 32px; height: 32px; }
-.controls .round.small { width: 46px; height: 46px; color: #b39a64; }
-.controls .round.small::before, .mini .round::before { inset: 3px; }
-.mini .round.play::before { inset: 3px; }
+.controls .round.small { width: 46px; height: 46px; color: #a88f5c; }
 .controls .round.small svg { width: 19px; height: 19px; }
-.controls .round.small.on { color: #fff0b5; background: linear-gradient(145deg, #fff0b0, #b77b1c 60%, #68420e); }
-.controls .round.small.on::before { border-color: #f4d982; background: linear-gradient(145deg, #5a4420, #2a1e0e 65%, #4a3618); }
+.controls .round.small.on { color: #fff0b5; background: none; }
+.controls .round.small.on::before { background: linear-gradient(150deg, #fff0b5, #d9a945 50%, #9c6c1c); }
+.controls .round.small.on::after { background: radial-gradient(circle at 34% 24%, #6a5226 0%, #33260f 55%, #1a130a 100%); }
 @media (max-width: 370px) {
   .controls { gap: 8px; }
   .controls .round { width: 54px; height: 54px; }
@@ -1334,9 +1329,9 @@ $("#seek").addEventListener("change", e => {
   dragging = false;
   audio.currentTime = (e.target.value / 1000) * (audio.duration || queue[state.i].dur);
 });
-/* Shooting-star seek bar (design by Baldur): reads the position from the slider and draws a waving
-   gold trail with star dust behind a glowing head. Animates only while the player is open and visible;
-   with "reduce motion" it draws a still picture whenever the position changes. */
+/* Shooting-star seek bar (design by Baldur): a straight gold bar up to the current position, a thin
+   wavy light line and fine star dust behind a four-pointed star. Reads the position from the slider.
+   Animates only while the player is open and visible; with "reduce motion" it draws a still picture. */
 var seekFx = (() => {
   const cv = $("#seek-canvas"), ctx = cv.getContext("2d"), seek = $("#seek");
   const still = matchMedia("(prefers-reduced-motion: reduce)");
@@ -1347,48 +1342,78 @@ var seekFx = (() => {
     if (!w) return;
     cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    parts = Array.from({ length: Math.min(900, Math.max(450, Math.floor(w * 2.2))) }, () => ({
-      x: Math.random(), lane: Math.random() * 2 - 1, size: .35 + Math.random() * 1.05,
-      seed: Math.random() * Math.PI * 2, twinkle: .55 + Math.random() * .45
+    parts = Array.from({ length: Math.min(420, Math.max(220, Math.floor(w * .9))) }, () => ({
+      d: Math.pow(Math.random(), 1.6), lane: Math.random() * 2 - 1, size: .35 + Math.random() * .8,
+      seed: Math.random() * Math.PI * 2, a: .35 + Math.random() * .65
     }));
   }
-  const wave = (x, t) => Math.sin(x * .035 + t * .00055) * 5.2 + Math.sin(x * .082 - t * .0007) * 2.3;
   const live = () => $("#sheet").classList.contains("open") && !document.hidden;
   function draw(now) {
     raf = 0;
     if (!w) resize();
     if (!w) return;
-    const t = still.matches ? 0 : now, left = 26, right = w - 26, y = h * .5;
-    const head = left + (right - left) * (seek.value / 1000);
+    const t = still.matches ? 0 : now, left = 26, right = w - 26, y = h * .5, len = right - left;
+    const head = left + len * (seek.value / 1000);
     ctx.clearRect(0, 0, w, h);
-    ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(right, y);
-    ctx.strokeStyle = "#40321f"; ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.stroke();
-    if (head > left) {
-      const pts = [];
-      for (let x = left; x <= head; x += 2) pts.push([x, y + wave(x, t)]);
-      pts.push([head, y + wave(head, t)]);
-      const path = () => { ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); };
-      path(); ctx.strokeStyle = "#e8bd58"; ctx.lineWidth = 11; ctx.globalAlpha = .26; ctx.shadowColor = "#f3ca66"; ctx.shadowBlur = 15; ctx.stroke();
-      ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-      path(); ctx.strokeStyle = "#d8a941"; ctx.lineWidth = 4.2; ctx.globalAlpha = .72; ctx.stroke();
-      path(); ctx.strokeStyle = "#fff0b5"; ctx.lineWidth = 1.35; ctx.globalAlpha = .98; ctx.stroke();
-      ctx.globalAlpha = 1;
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    // Rest of the song: a thin line that fades out to the right.
+    let g = ctx.createLinearGradient(head, 0, right, 0);
+    g.addColorStop(0, "rgba(176,140,74,.75)"); g.addColorStop(1, "rgba(96,78,44,.45)");
+    ctx.beginPath(); ctx.moveTo(head, y); ctx.lineTo(right, y); ctx.strokeStyle = g; ctx.lineWidth = 1.3; ctx.stroke();
+    if (head > left + 1) {
+      // Played part: a straight gold bar with a soft glow, brightest towards the star.
+      g = ctx.createLinearGradient(left, 0, head, 0);
+      g.addColorStop(0, "#b98a35"); g.addColorStop(.7, "#e2b552"); g.addColorStop(1, "#f6d67e");
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(head, y);
+      ctx.strokeStyle = "#e8bd58"; ctx.globalAlpha = .35; ctx.lineWidth = 10; ctx.shadowColor = "#f0c862"; ctx.shadowBlur = 14; ctx.stroke();
+      ctx.shadowBlur = 0; ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(head, y); ctx.strokeStyle = g; ctx.lineWidth = 4.6; ctx.stroke();
+      // Soft haze around the last part of the trail.
+      const hz = Math.min(len * .32, head - left);
+      ctx.save(); ctx.translate(head - hz * .45, y); ctx.scale(Math.max(hz, 10) / 22, 1);
+      g = ctx.createRadialGradient(0, 0, 0, 0, 0, 22);
+      g.addColorStop(0, "rgba(255,226,140,.26)"); g.addColorStop(1, "rgba(255,226,140,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 22, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      // Star dust: fine, sparse, densest close to the star.
+      const reach = len * .55;
+      for (const p of parts) {
+        const dist = p.d * reach, x = head - dist;
+        if (x < left) continue;
+        const yy = y + p.lane * (3 + dist * .11) + Math.sin(t * .0011 + p.seed) * 1.5;
+        const tw = .55 + .45 * Math.sin(t * .004 + p.seed);
+        ctx.beginPath(); ctx.arc(x, yy, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,228,160,${(1 - p.d) * p.a * tw * .5})`; ctx.fill();
+      }
+      // Thin wavy light line: starts faint behind the star and runs into it.
+      const sx = Math.max(left, head - len * .5), wl = head - sx;
+      if (wl > 6) {
+        const amp = 8 * Math.min(1, wl / 80);
+        g = ctx.createLinearGradient(sx, 0, head, 0);
+        g.addColorStop(0, "rgba(255,240,190,0)"); g.addColorStop(.25, "rgba(255,240,190,.85)"); g.addColorStop(1, "rgba(255,246,214,.95)");
+        ctx.beginPath();
+        for (let x = sx; x <= head; x += 2) {
+          const u = (x - sx) / wl, env = Math.pow(Math.sin(Math.PI * Math.min(1, u * .5 + .5) ), 1) * Math.min(1, u * 4);
+          const yy = y + amp * env * Math.sin(x * .045 - t * .0028);
+          x === sx ? ctx.moveTo(x, yy) : ctx.lineTo(x, yy);
+        }
+        ctx.lineTo(head, y);
+        ctx.strokeStyle = g; ctx.lineWidth = 1.2; ctx.shadowColor = "#fff0b5"; ctx.shadowBlur = 4; ctx.stroke(); ctx.shadowBlur = 0;
+      }
     }
-    const reach = (right - left) * .56;
-    for (const p of parts) {
-      const x = left + p.x * (right - left), dist = head - x;
-      if (dist <= 0 || dist > reach) continue;
-      const yy = y + wave(x, t) + p.lane * (2 + dist * .105);
-      const fade = 1 - dist / reach, tw = .62 + .38 * Math.sin(t * .004 + p.seed);
-      ctx.beginPath(); ctx.arc(x, yy, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,${Math.round(207 + tw * 35)},${Math.round(105 + tw * 95)},${fade * p.twinkle * .88})`;
-      ctx.fill();
-    }
-    const hy = y + wave(head, t), glow = ctx.createRadialGradient(head, hy, 0, head, hy, 23);
-    glow.addColorStop(0, "rgba(255,248,213,.95)"); glow.addColorStop(.18, "rgba(255,221,125,.72)"); glow.addColorStop(1, "rgba(232,189,88,0)");
-    ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(head, hy, 23, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(head, hy, 3.1, 0, Math.PI * 2);
-    ctx.fillStyle = "#fff7d4"; ctx.shadowColor = "#ffe7a0"; ctx.shadowBlur = 9; ctx.fill(); ctx.shadowBlur = 0;
+    // Glow and four-pointed star at the current position.
+    g = ctx.createRadialGradient(head, y, 0, head, y, 34);
+    g.addColorStop(0, "rgba(255,244,205,.8)"); g.addColorStop(.3, "rgba(250,214,120,.38)"); g.addColorStop(1, "rgba(232,189,88,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(head, y, 34, 0, Math.PI * 2); ctx.fill();
+    const s = 1 + (still.matches ? 0 : .06 * Math.sin(t * .003)), rv = 15 * s, rh = 16 * s, k = 2.3 * s;
+    ctx.beginPath(); ctx.moveTo(head, y - rv);
+    ctx.quadraticCurveTo(head + k, y - k, head + rh, y);
+    ctx.quadraticCurveTo(head + k, y + k, head, y + rv);
+    ctx.quadraticCurveTo(head - k, y + k, head - rh, y);
+    ctx.quadraticCurveTo(head - k, y - k, head, y - rv);
+    g = ctx.createRadialGradient(head, y, 0, head, y, rh);
+    g.addColorStop(0, "#fffdf2"); g.addColorStop(.35, "#fff0bf"); g.addColorStop(1, "#f0c55e");
+    ctx.fillStyle = g; ctx.shadowColor = "#ffe7a0"; ctx.shadowBlur = 12; ctx.fill(); ctx.shadowBlur = 0;
+    ctx.beginPath(); ctx.arc(head, y, 3.2, 0, Math.PI * 2); ctx.fillStyle = "#ffffff"; ctx.fill();
     if (!still.matches && live()) raf = requestAnimationFrame(draw);
   }
   const kick = () => { if (!raf && live()) raf = requestAnimationFrame(draw); };
