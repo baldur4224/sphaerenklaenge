@@ -129,3 +129,26 @@ revoke all on function public.bs_einrichten(text), public.bs_liste(text),
 grant execute on function public.bs_einrichten(text), public.bs_liste(text),
   public.bs_antworten(text, uuid, text), public.bs_sichtbar(text, uuid, boolean),
   public.bs_loeschen(text, uuid) to anon, authenticated;
+
+-- Ergänzung: wer antwortet (Baldur oder Caro-Dame)
+alter table public.beitraege add column if not exists antwort_von text
+  check (antwort_von is null or antwort_von in ('Baldur', 'Caro-Dame'));
+grant select (antwort_von) on public.beitraege to anon, authenticated;
+
+create or replace function public.bs_antworten(p_token text, p_id uuid, p_antwort text, p_von text) returns boolean
+language plpgsql security definer set search_path = '' as $$
+declare
+  a text := nullif(btrim(coalesce(p_antwort, '')), '');
+  v text := case when p_von in ('Baldur', 'Caro-Dame') then p_von else 'Baldur' end;
+begin
+  if not intern.pruefen(p_token) then return false; end if;
+  update public.beitraege
+     set antwort = a,
+         antwort_von = case when a is null then null else v end,
+         beantwortet = case when a is null then null else now() end,
+         sichtbar = a is not null
+   where id = p_id;
+  return found;
+end $$;
+revoke all on function public.bs_antworten(text, uuid, text, text) from public;
+grant execute on function public.bs_antworten(text, uuid, text, text) to anon, authenticated;

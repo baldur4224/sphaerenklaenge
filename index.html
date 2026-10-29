@@ -200,6 +200,11 @@ select.fr-in { appearance: none; -webkit-appearance: none; padding-right: 40px; 
 .bs-fr .fr-state { font-weight: 700; }
 .bs-fr .fr-state.neu { color: var(--gold-hi); }
 .bs-fr textarea { min-height: 90px; }
+.bs-fr-von { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bs-fr-von > span { color: var(--muted); font-size: .85rem; margin-right: 2px; }
+.bs-fr-von .pill { min-height: 40px; padding: 0 16px; }
+.bs-fr-von .pill.on { background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, #b7842f); color: var(--on-gold); border-color: transparent; }
+.bs-fr-von .pill:not(.on) { color: var(--muted); }
 .bs-fr-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .bs-fr-actions .pill { min-height: 42px; padding: 0 16px; }
 .bs-fr-actions .linkish { margin-left: auto; }
@@ -602,7 +607,7 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
           <button class="linkish" id="stats-key-del" hidden>Schlüssel von diesem Gerät entfernen</button>
         </div>
       </div>
-      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 18:50</p>
+      <p class="stats-diag" id="site-version">Seitenversion: 29.10.2026 · 18:55</p>
     </section>
     <div class="bs-foot"><button class="pill" id="bs-leave2">Backstage verlassen</button></div>
   </main>
@@ -1927,12 +1932,12 @@ const frDate = d => { try { return new Date(d).toLocaleDateString("de-DE", { day
 const frText = s => esc(s || "");
 const frMeta = b => [b.lied ? "<b>" + frText(b.lied) + "</b>" : "<b>Allgemein</b>", b.name ? "von " + frText(b.name) : "", frDate(b.erstellt)].filter(Boolean).join("<span>·</span>");
 const frItem = b => `<p class="fr-meta">${frMeta(b)}</p><p class="fr-q">${frText(b.text)}</p>` +
-  (b.antwort ? `<p class="fr-a"><span class="fr-a-head">Antwort von Baldur</span>${frText(b.antwort)}</p>` : "");
+  (b.antwort ? `<p class="fr-a"><span class="fr-a-head">Antwort von ${frText(b.antwort_von || "Baldur")}</span>${frText(b.antwort)}</p>` : "");
 let frLoaded = false;
 async function frLoadPublic() {
   const list = $("#fr-list");
   try {
-    const rows = await frFetch("beitraege?select=id,erstellt,name,lied,text,antwort,beantwortet&order=beantwortet.desc&limit=100", { headers: frHeaders() });
+    const rows = await frFetch("beitraege?select=id,erstellt,name,lied,text,antwort,antwort_von,beantwortet&order=beantwortet.desc&limit=100", { headers: frHeaders() });
     frLoaded = true;
     $("#fr-count").textContent = rows.length ? (rows.length === 1 ? "1 beantwortete Nachricht" : rows.length + " beantwortete Nachrichten") : "";
     list.innerHTML = rows.length ? `<p class="fr-list-head">Beantwortete Fragen</p>` + rows.map(b => `<article class="fr-item">${frItem(b)}</article>`).join("")
@@ -1972,6 +1977,8 @@ $("#fr-form").addEventListener("submit", async e => {
 
 /* Backstage side: the password itself never leaves the device, only a hash made for this purpose. */
 let bsToken = null, bsFr = [];
+const FR_VON = ["Baldur", "Caro-Dame"];
+const frVonLetzt = () => { try { const v = localStorage.getItem("sk-fr-von"); return FR_VON.includes(v) ? v : "Baldur"; } catch (e) { return "Baldur"; } };
 async function frToken(pw) {
   const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("sphaerenklaenge-fragen:" + pw));
   return [...new Uint8Array(d)].map(x => x.toString(16).padStart(2, "0")).join("");
@@ -2009,6 +2016,7 @@ function renderBsFr() {
     return `<article class="fr-item${b.antwort ? "" : " neu"}" data-fr="${esc(b.id)}">
       <p class="fr-meta">${st}<span>·</span>${frMeta(b)}</p>
       <p class="fr-q">${frText(b.text)}</p>
+      <div class="bs-fr-von" role="radiogroup" aria-label="Wer antwortet?"><span>Antwort von</span>${FR_VON.map(v => `<button type="button" class="pill${v === (b.antwort_von || frVonLetzt()) ? " on" : ""}" role="radio" aria-checked="${v === (b.antwort_von || frVonLetzt())}" data-fr-von="${esc(v)}">${esc(v)}</button>`).join("")}</div>
       <textarea class="fr-in" maxlength="4000" placeholder="Deine Antwort …" aria-label="Antwort">${frText(b.antwort)}</textarea>
       <div class="bs-fr-actions">
         <button class="pill primary" data-fr-act="antworten">${b.antwort ? "Antwort ändern" : "Antworten und zeigen"}</button>
@@ -2019,6 +2027,11 @@ function renderBsFr() {
   }).join("") : `<p class="bs-empty">Noch keine Nachrichten.</p>`;
 }
 $("#bs-fr").addEventListener("click", async e => {
+  const vonBtn = e.target.closest("[data-fr-von]");
+  if (vonBtn) {
+    vonBtn.parentNode.querySelectorAll("[data-fr-von]").forEach(x => { const on = x === vonBtn; x.classList.toggle("on", on); x.setAttribute("aria-checked", on); });
+    return;
+  }
   const btn = e.target.closest("[data-fr-act]"); if (!btn || !bsToken) return;
   const item = btn.closest("[data-fr]"), id = item.dataset.fr, act = btn.dataset.frAct;
   const b = bsFr.find(x => x.id === id); if (!b) return;
@@ -2028,8 +2041,9 @@ $("#bs-fr").addEventListener("click", async e => {
       const a = item.querySelector("textarea").value.trim();
       if (!a) { toast("Schreib zuerst eine Antwort.", true); item.querySelector("textarea").focus(); return; }
       btn.disabled = true;
-      ok = await frRpc("bs_antworten", { p_token: bsToken, p_id: id, p_antwort: a });
-      if (ok) toast("Antwort gespeichert. Sie ist jetzt auf der Hauptseite zu sehen.");
+      const von = (item.querySelector("[data-fr-von].on") || {}).dataset?.frVon || "Baldur";
+      ok = await frRpc("bs_antworten", { p_token: bsToken, p_id: id, p_antwort: a, p_von: von });
+      if (ok) { try { localStorage.setItem("sk-fr-von", von); } catch (e) {} toast("Antwort von " + von + " gespeichert. Sie ist jetzt auf der Hauptseite zu sehen."); }
     } else if (act === "verbergen" || act === "zeigen") {
       btn.disabled = true;
       ok = await frRpc("bs_sichtbar", { p_token: bsToken, p_id: id, p_sichtbar: act === "zeigen" });
