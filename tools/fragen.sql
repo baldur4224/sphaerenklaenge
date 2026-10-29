@@ -1,0 +1,131 @@
+-- SphärenKlänge: Fragen & Empfindungen
+-- Speicher in Supabase. Einmal im SQL-Editor des Supabase-Projekts ausführen.
+--
+-- Besucher dürfen nur neue Beiträge schreiben (ohne Antwort, unsichtbar) und nur
+-- beantwortete, freigegebene Beiträge lesen. Alles andere (Liste aller Beiträge,
+-- antworten, verbergen, löschen) geht nur über die bs_*-Funktionen mit dem
+-- Backstage-Zugang. Der Zugang ist ein Prüfwert, den die Seite beim Backstage-Login
+-- aus dem Passwort berechnet; hier liegt davon nur ein bcrypt-Hash.
+-- Die erste erfolgreiche Backstage-Anmeldung nach dem Einrichten legt ihn fest.
+
+create extension if not exists pgcrypto with schema extensions;
+
+create table if not exists public.beitraege (
+  id uuid primary key default gen_random_uuid(),
+  erstellt timestamptz not null default now(),
+  name text check (name is null or char_length(name) <= 60),
+  lied text check (lied is null or char_length(lied) <= 150),
+  text text not null check (char_length(text) between 2 and 2000),
+  antwort text check (antwort is null or char_length(antwort) <= 4000),
+  beantwortet timestamptz,
+  sichtbar boolean not null default false
+);
+
+alter table public.beitraege enable row level security;
+revoke all on public.beitraege from anon, authenticated;
+grant insert (name, lied, text) on public.beitraege to anon, authenticated;
+grant select (id, erstellt, name, lied, text, antwort, beantwortet) on public.beitraege to anon, authenticated;
+
+drop policy if exists "neu schreiben" on public.beitraege;
+create policy "neu schreiben" on public.beitraege for insert to anon, authenticated
+  with check (antwort is null and beantwortet is null and sichtbar = false);
+drop policy if exists "beantwortete lesen" on public.beitraege;
+create policy "beantwortete lesen" on public.beitraege for select to anon, authenticated
+  using (sichtbar);
+
+-- Schutz vor Überflutung: höchstens 40 neue, unbeantwortete Beiträge pro Stunde.
+create or replace function public.beitraege_bremse() returns trigger
+language plpgsql security definer set search_path = '' as $$
+begin
+  if (select count(*) from public.beitraege
+      where not sichtbar and erstellt > now() - interval '1 hour') >= 40 then
+    raise exception 'Gerade kommen zu viele Nachrichten an. Bitte später noch einmal versuchen.';
+  end if;
+  return new;
+end $$;
+drop trigger if exists bremse on public.beitraege;
+create trigger bremse before insert on public.beitraege
+  for each row execute function public.beitraege_bremse();
+
+-- Zugang (nicht über die API erreichbar)
+create schema if not exists intern;
+revoke all on schema intern from public, anon, authenticated;
+create table if not exists intern.zugang (
+  id int primary key default 1 check (id = 1),
+  hash text not null
+);
+create table if not exists intern.fehlversuche (zeit timestamptz not null default now());
+
+create or replace function intern.pruefen(p_token text) returns boolean
+language plpgsql security definer set search_path = '' as $$
+declare h text;
+begin
+  delete from intern.fehlversuche where zeit < now() - interval '1 day';
+  if (select count(*) from intern.fehlversuche where zeit > now() - interval '1 hour') >= 30 then
+    return false;
+  end if;
+  select hash into h from intern.zugang where id = 1;
+  if h is null or p_token is null or char_length(p_token) <> 64 then
+    insert into intern.fehlversuche default values;
+    return false;
+  end if;
+  if extensions.crypt(p_token, h) = h then return true; end if;
+  insert into intern.fehlversuche default values;
+  return false;
+end $$;
+
+create or replace function public.bs_einrichten(p_token text) returns text
+language plpgsql security definer set search_path = '' as $$
+begin
+  if exists (select 1 from intern.zugang) then
+    return case when intern.pruefen(p_token) then 'ok' else 'nein' end;
+  end if;
+  if p_token is null or char_length(p_token) <> 64 then return 'nein'; end if;
+  insert into intern.zugang (id, hash) values (1, extensions.crypt(p_token, extensions.gen_salt('bf', 10)));
+  return 'neu';
+end $$;
+
+create or replace function public.bs_liste(p_token text) returns json
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not intern.pruefen(p_token) then return null; end if;
+  return coalesce((select json_agg(b order by b.erstellt desc) from public.beitraege b), '[]'::json);
+end $$;
+
+create or replace function public.bs_antworten(p_token text, p_id uuid, p_antwort text) returns boolean
+language plpgsql security definer set search_path = '' as $$
+declare a text := nullif(btrim(coalesce(p_antwort, '')), '');
+begin
+  if not intern.pruefen(p_token) then return false; end if;
+  update public.beitraege
+     set antwort = a,
+         beantwortet = case when a is null then null else now() end,
+         sichtbar = a is not null
+   where id = p_id;
+  return found;
+end $$;
+
+create or replace function public.bs_sichtbar(p_token text, p_id uuid, p_sichtbar boolean) returns boolean
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not intern.pruefen(p_token) then return false; end if;
+  update public.beitraege set sichtbar = p_sichtbar and antwort is not null where id = p_id;
+  return found;
+end $$;
+
+create or replace function public.bs_loeschen(p_token text, p_id uuid) returns boolean
+language plpgsql security definer set search_path = '' as $$
+begin
+  if not intern.pruefen(p_token) then return false; end if;
+  delete from public.beitraege where id = p_id;
+  return found;
+end $$;
+
+revoke all on function intern.pruefen(text) from public, anon, authenticated;
+revoke all on function public.beitraege_bremse() from public, anon, authenticated;
+revoke all on function public.bs_einrichten(text), public.bs_liste(text),
+  public.bs_antworten(text, uuid, text), public.bs_sichtbar(text, uuid, boolean),
+  public.bs_loeschen(text, uuid) from public;
+grant execute on function public.bs_einrichten(text), public.bs_liste(text),
+  public.bs_antworten(text, uuid, text), public.bs_sichtbar(text, uuid, boolean),
+  public.bs_loeschen(text, uuid) to anon, authenticated;

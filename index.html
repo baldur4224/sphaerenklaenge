@@ -160,6 +160,41 @@ h1 { font-family: var(--display); font-weight: 400; font-size: clamp(2.5rem, 12v
 /* Everything card */
 .tipp.take { margin-top: 14px; }
 .tipp[hidden] + .tipp.take { margin-top: 28px; }
+.fragen + .tipp { margin-top: 14px; }
+.fr-count { display: block; color: var(--muted); font-weight: 400; font-size: .82rem; margin-top: 2px; }
+.fr-count:empty { display: none; }
+.fr-merk { margin: 0; font-family: var(--display); font-size: 1.12rem; line-height: 1.45; color: var(--gold-hi) !important; }
+.fr-form { display: grid; gap: 8px; }
+.fr-label { font-size: .85rem; color: var(--muted); margin-top: 4px; }
+.fr-label span { opacity: .75; }
+.fr-in { width: 100%; min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); padding: 10px 14px; font: inherit; font-size: 1rem; }
+.fr-in:focus { outline: none; border-color: var(--gold); }
+textarea.fr-in { resize: vertical; min-height: 110px; line-height: 1.45; }
+select.fr-in { appearance: none; -webkit-appearance: none; padding-right: 40px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9a945' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; }
+.fr-form .pill { justify-self: start; margin-top: 8px; }
+.fr-note { margin: 0; font-size: .82rem; color: var(--muted); }
+.fr-msg { margin: 0; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(217,169,69,.45); background: rgba(217,169,69,.08); color: var(--fg); }
+.fr-msg.err { border-color: rgba(220,110,90,.55); background: rgba(220,110,90,.08); }
+.fr-list { display: grid; gap: 12px; border-top: 1px solid var(--line); padding-top: 16px; }
+.fr-list:empty { display: none; }
+.fr-list > p { margin: 0; color: var(--muted); font-size: .9rem; text-align: center; }
+.fr-item { border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; gap: 8px; background: var(--surface-2); }
+.fr-meta { font-size: .78rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.fr-meta b { color: var(--gold); font-weight: 600; }
+.fr-q, .fr-a { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.fr-a { border-left: 2px solid var(--gold); padding-left: 12px; color: var(--fg); }
+.fr-a-head { display: block; color: var(--gold-hi); font-family: var(--display); font-size: 1rem; margin-bottom: 2px; }
+/* Backstage: messages */
+.bs-fr-badge { display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 7px; margin-left: 8px; border-radius: 999px; background: var(--gold); color: var(--on-gold); font-family: var(--body); font-size: .8rem; font-weight: 700; vertical-align: middle; }
+.bs-fr-note { margin: 0 0 12px; color: var(--muted); font-size: .9rem; }
+.bs-fr { display: grid; gap: 12px; }
+.bs-fr .fr-item.neu { border-color: rgba(217,169,69,.6); }
+.bs-fr .fr-state { font-weight: 700; }
+.bs-fr .fr-state.neu { color: var(--gold-hi); }
+.bs-fr textarea { min-height: 90px; }
+.bs-fr-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bs-fr-actions .pill { min-height: 42px; padding: 0 16px; }
+.bs-fr-actions .linkish { margin-left: auto; }
 .take .pill { justify-self: start; }
 details.help { border-top: 1px solid var(--line); padding-top: 4px; }
 details.help summary { list-style: none; cursor: pointer; min-height: 44px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 600; }
@@ -432,6 +467,29 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <div class="sec-head" id="sec-singles"><h2>Singles</h2><span>Tippe zum Reinhören</span></div>
     <ol class="list" id="singles"></ol>
 
+    <details class="tipp fragen" id="fragen" hidden>
+      <summary>
+        <span class="tipp-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/><path d="M9 10.5h6M9 13.5h4"/></svg></span>
+        <span class="tipp-head"><b>Fragen &amp; Empfindungen:</b> teile, was dich bewegt<span class="fr-count" id="fr-count"></span></span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+      </summary>
+      <div class="tipp-body">
+        <p class="fr-merk" id="fr-merk">Hast du eine Frage zu einem Lied? Oder hat dich ein Song berührt? Teil mit uns, was du fühlst – wir antworten dir hier.</p>
+        <form class="fr-form" id="fr-form" novalidate>
+          <label class="fr-label" for="fr-lied">Zu welchem Lied?</label>
+          <select class="fr-in" id="fr-lied"><option value="">Allgemein, kein bestimmtes Lied</option></select>
+          <label class="fr-label" for="fr-text">Deine Frage oder deine Empfindung</label>
+          <textarea class="fr-in" id="fr-text" rows="4" maxlength="2000" placeholder="Schreib einfach los …"></textarea>
+          <label class="fr-label" for="fr-name">Dein Name <span>(freiwillig)</span></label>
+          <input class="fr-in" id="fr-name" type="text" maxlength="60" autocomplete="nickname" placeholder="z. B. Anna">
+          <button class="pill primary" id="fr-send" type="submit">Absenden</button>
+          <p class="fr-note">Deine Nachricht erscheint hier, sobald Baldur geantwortet hat.</p>
+          <p class="fr-msg" id="fr-msg" hidden></p>
+        </form>
+        <div class="fr-list" id="fr-list"></div>
+      </div>
+    </details>
+
     <details class="tipp" id="tipp">
       <summary>
         <span class="tipp-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></span>
@@ -511,6 +569,11 @@ footer .privacy { font-size: .72rem; opacity: .7; max-width: 34em; }
     <div class="sec-head" id="bs-songs-head"><h2>Einzelne Lieder</h2><span id="bs-count"></span></div>
     <ol class="list" id="bs-tracks"></ol>
     <p class="bs-empty" id="bs-empty" hidden>Im Moment liegen hier keine Lieder.</p>
+    <div class="sec-head" id="bs-fr-head" hidden><h2>Nachrichten<span class="bs-fr-badge" id="bs-fr-badge" hidden></span></h2><button class="linkish" id="bs-fr-reload">Neu laden</button></div>
+    <section id="bs-fr-wrap" hidden aria-label="Fragen und Empfindungen">
+      <p class="bs-fr-note">Neue Nachrichten sind nur hier zu sehen. Sobald du antwortest, erscheinen sie mit deiner Antwort auf der Hauptseite.</p>
+      <div class="bs-fr" id="bs-fr"></div>
+    </section>
     <div class="sec-head"><h2>Besucherzähler</h2></div>
     <section class="bs-stats" id="stats" aria-label="Besucherzähler">
       <div class="stats-num" id="stats-num">…</div>
@@ -1790,6 +1853,9 @@ function lockBackstage() {
   bsAlbums = [];
   for (const id of ["#s-share", "#s-pick", "#s-one"]) $(id).hidden = false;
   bsKey = null; bsScroll = 0;
+  bsToken = null; bsFr = [];
+  $("#bs-fr").innerHTML = ""; $("#bs-fr-head").hidden = true; $("#bs-fr-wrap").hidden = true;
+  if (frOn()) { if ($("#fragen").open) frLoadPublic(); else frLoaded = false; }
   updateDock();
 }
 function openLogin() {
@@ -1811,6 +1877,7 @@ $("#login-form").addEventListener("submit", async e => {
     queue.push(...items);
     bsAlbums = albums;
     bsKey = key;
+    frBsLogin(pw);
     closeLogin();
     if (!$("#intro").hidden) hideIntro();
     go("bs");
@@ -1825,10 +1892,148 @@ $("#login-form").addEventListener("submit", async e => {
 $("#bs-leave").addEventListener("click", () => stepBack("sk"));
 $("#bs-leave2").addEventListener("click", () => stepBack("sk"));
 
+/* ---------- Fragen & Empfindungen ----------
+   Visitors write questions or feelings about the songs. They are stored in Supabase (see tools/fragen.sql)
+   and stay hidden until Baldur answers them in the backstage; then they appear here with the answer.
+   The keys below are public by design: the database itself only lets visitors add new, hidden messages
+   and read answered ones. Answering needs the backstage password (only a hash of it is sent). */
+const FRAGEN = { url: "", key: "" };
+const frOn = () => !!(FRAGEN.url && FRAGEN.key);
+function frHeaders(json) {
+  const h = { apikey: FRAGEN.key };
+  if (FRAGEN.key.startsWith("eyJ")) h.Authorization = "Bearer " + FRAGEN.key;
+  if (json) h["Content-Type"] = "application/json";
+  return h;
+}
+async function frFetch(path, opt = {}) {
+  const r = await fetch(FRAGEN.url.replace(/\/$/, "") + "/rest/v1/" + path, { cache: "no-store", ...opt });
+  if (!r.ok) { let m = ""; try { m = (await r.json()).message || ""; } catch (e) {} const err = new Error(m || "net"); err.status = r.status; throw err; }
+  return r.status === 204 ? null : r.json().catch(() => null);
+}
+const frRpc = (fn, body) => frFetch("rpc/" + fn, { method: "POST", headers: frHeaders(true), body: JSON.stringify(body) });
+const frDate = d => { try { return new Date(d).toLocaleDateString("de-DE", { day: "numeric", month: "long", year: "numeric" }); } catch (e) { return ""; } };
+const frText = s => esc(s || "");
+const frMeta = b => [b.lied ? "<b>" + frText(b.lied) + "</b>" : "<b>Allgemein</b>", b.name ? "von " + frText(b.name) : "", frDate(b.erstellt)].filter(Boolean).join("<span>·</span>");
+const frItem = b => `<p class="fr-meta">${frMeta(b)}</p><p class="fr-q">${frText(b.text)}</p>` +
+  (b.antwort ? `<p class="fr-a"><span class="fr-a-head">Antwort von Baldur</span>${frText(b.antwort)}</p>` : "");
+let frLoaded = false;
+async function frLoadPublic() {
+  const list = $("#fr-list");
+  try {
+    const rows = await frFetch("beitraege?select=id,erstellt,name,lied,text,antwort,beantwortet&order=beantwortet.desc&limit=100", { headers: frHeaders() });
+    frLoaded = true;
+    $("#fr-count").textContent = rows.length ? (rows.length === 1 ? "1 beantwortete Nachricht" : rows.length + " beantwortete Nachrichten") : "";
+    list.innerHTML = rows.length ? rows.map(b => `<article class="fr-item">${frItem(b)}</article>`).join("")
+      : "<p>Noch keine beantworteten Fragen. Sei die oder der Erste!</p>";
+  } catch (e) {
+    list.innerHTML = "<p>Die Antworten konnten gerade nicht geladen werden.</p>";
+  }
+}
+function frInit() {
+  if (!frOn()) return;
+  $("#fragen").hidden = false;
+  const titles = [...new Set(queue.filter(t => !t.bs).map(t => t.title))].sort((a, b) => a.localeCompare(b, "de"));
+  $("#fr-lied").insertAdjacentHTML("beforeend", titles.map(t => `<option>${esc(t)}</option>`).join(""));
+  $("#fragen").addEventListener("toggle", () => { if ($("#fragen").open && !frLoaded) frLoadPublic(); });
+  frLoadPublic();
+}
+function frMsg(text, err) { const m = $("#fr-msg"); m.textContent = text; m.classList.toggle("err", !!err); m.hidden = !text; }
+$("#fr-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const text = $("#fr-text").value.trim(), name = $("#fr-name").value.trim(), lied = $("#fr-lied").value;
+  if (text.length < 2) { frMsg("Schreib bitte zuerst deine Frage oder Empfindung.", true); $("#fr-text").focus(); return; }
+  const btn = $("#fr-send");
+  btn.disabled = true; btn.textContent = "Wird gesendet …"; frMsg("");
+  try {
+    await frFetch("beitraege", { method: "POST", headers: { ...frHeaders(true), Prefer: "return=minimal" }, body: JSON.stringify({ text, name: name || null, lied: lied || null }) });
+    $("#fr-text").value = "";
+    frMsg("Danke! Deine Nachricht ist angekommen. Sobald Baldur geantwortet hat, erscheint sie hier.");
+  } catch (err) {
+    frMsg(/zu viele/i.test(err.message) ? "Gerade kommen sehr viele Nachrichten an. Versuch es bitte später noch einmal."
+      : "Das hat leider nicht geklappt. Prüfe die Internetverbindung und versuch es noch einmal.", true);
+  } finally { btn.disabled = false; btn.textContent = "Absenden"; }
+});
+
+/* Backstage side: the password itself never leaves the device, only a hash made for this purpose. */
+let bsToken = null, bsFr = [];
+async function frToken(pw) {
+  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("sphaerenklaenge-fragen:" + pw));
+  return [...new Uint8Array(d)].map(x => x.toString(16).padStart(2, "0")).join("");
+}
+async function frBsLogin(pw) {
+  if (!frOn()) return;
+  try {
+    const t = await frToken(pw);
+    const r = await frRpc("bs_einrichten", { p_token: t });
+    if (r === "ok" || r === "neu") bsToken = t;
+  } catch (e) {}
+  if (bsToken) frBsLoad(true);
+}
+async function frBsLoad(announce) {
+  if (!bsToken) return;
+  $("#bs-fr-head").hidden = false; $("#bs-fr-wrap").hidden = false;
+  try {
+    const rows = await frRpc("bs_liste", { p_token: bsToken });
+    if (!Array.isArray(rows)) throw new Error("zugang");
+    bsFr = rows;
+    renderBsFr();
+    const n = rows.filter(b => !b.antwort).length;
+    if (announce && n) toast(n === 1 ? "Eine neue Nachricht wartet auf deine Antwort." : n + " neue Nachrichten warten auf deine Antwort.");
+  } catch (e) {
+    $("#bs-fr").innerHTML = `<p class="bs-empty">Die Nachrichten konnten gerade nicht geladen werden.</p>`;
+  }
+}
+function renderBsFr() {
+  const n = bsFr.filter(b => !b.antwort).length;
+  $("#bs-fr-badge").textContent = n; $("#bs-fr-badge").hidden = !n;
+  /* new ones first, then the rest by date */
+  const rows = bsFr.slice().sort((a, b) => (!!a.antwort - !!b.antwort) || (new Date(b.erstellt) - new Date(a.erstellt)));
+  $("#bs-fr").innerHTML = rows.length ? rows.map(b => {
+    const st = !b.antwort ? `<span class="fr-state neu">Neu</span>` : b.sichtbar ? `<span class="fr-state">Beantwortet · sichtbar</span>` : `<span class="fr-state">Beantwortet · verborgen</span>`;
+    return `<article class="fr-item${b.antwort ? "" : " neu"}" data-fr="${esc(b.id)}">
+      <p class="fr-meta">${st}<span>·</span>${frMeta(b)}</p>
+      <p class="fr-q">${frText(b.text)}</p>
+      <textarea class="fr-in" maxlength="4000" placeholder="Deine Antwort …" aria-label="Antwort">${frText(b.antwort)}</textarea>
+      <div class="bs-fr-actions">
+        <button class="pill primary" data-fr-act="antworten">${b.antwort ? "Antwort ändern" : "Antworten und zeigen"}</button>
+        ${b.antwort ? `<button class="pill" data-fr-act="${b.sichtbar ? "verbergen" : "zeigen"}">${b.sichtbar ? "Verbergen" : "Wieder zeigen"}</button>` : ""}
+        <button class="linkish" data-fr-act="loeschen">Löschen</button>
+      </div>
+    </article>`;
+  }).join("") : `<p class="bs-empty">Noch keine Nachrichten.</p>`;
+}
+$("#bs-fr").addEventListener("click", async e => {
+  const btn = e.target.closest("[data-fr-act]"); if (!btn || !bsToken) return;
+  const item = btn.closest("[data-fr]"), id = item.dataset.fr, act = btn.dataset.frAct;
+  const b = bsFr.find(x => x.id === id); if (!b) return;
+  let ok = false;
+  try {
+    if (act === "antworten") {
+      const a = item.querySelector("textarea").value.trim();
+      if (!a) { toast("Schreib zuerst eine Antwort.", true); item.querySelector("textarea").focus(); return; }
+      btn.disabled = true;
+      ok = await frRpc("bs_antworten", { p_token: bsToken, p_id: id, p_antwort: a });
+      if (ok) toast("Antwort gespeichert. Sie ist jetzt auf der Hauptseite zu sehen.");
+    } else if (act === "verbergen" || act === "zeigen") {
+      btn.disabled = true;
+      ok = await frRpc("bs_sichtbar", { p_token: bsToken, p_id: id, p_sichtbar: act === "zeigen" });
+      if (ok) toast(act === "zeigen" ? "Wird wieder auf der Hauptseite gezeigt." : "Auf der Hauptseite verborgen.");
+    } else if (act === "loeschen") {
+      if (btn.dataset.sure !== "1") { btn.dataset.sure = "1"; btn.textContent = "Wirklich löschen?"; setTimeout(() => { if (btn.isConnected) { btn.dataset.sure = ""; btn.textContent = "Löschen"; } }, 4000); return; }
+      ok = await frRpc("bs_loeschen", { p_token: bsToken, p_id: id });
+      if (ok) toast("Nachricht gelöscht.");
+    }
+  } catch (err) { ok = false; }
+  if (!ok) toast("Das hat nicht geklappt. Prüfe die Internetverbindung.", true);
+  await frBsLoad(false);
+});
+$("#bs-fr-reload").addEventListener("click", () => frBsLoad(false));
+
 /* ---------- Start ---------- */
 $("#m-play").innerHTML = ICON.play;
 $("#s-play").innerHTML = ICON.play;
 renderHome();
+frInit();
 renderSelbar();
 renderPickSheet();
 $("#shuffle-n").textContent = songs(queue.length);
